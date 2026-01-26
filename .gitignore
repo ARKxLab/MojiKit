@@ -1,0 +1,48 @@
+# 构建产物
+build/
+*.bin
+*.elf
+*.map
+*.bootloader.bin
+*.partitions.bin
+*.merged.bin
+
+# Arduino IDE生成文件
+*.hex
+*.eep
+
+# 测试文件和目录
+test_script/
+test_connection.html
+test_parallel_execution.md
+测试示例.txt
+esp32ip_test/
+ESP32/ESP32_Test/
+
+# 数据文件
+*.xlsx
+*.zip
+data.zip
+
+# 旧版本文件（如确认不再使用）
+5finger_DIY3_0/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE文件
+.vscode/
+.idea/
+*.code-workspace
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+

@@ -1,0 +1,3710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MojiKit Action Sequence Designer - PC Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-weight: 300;
+        }
+
+        .wifi-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .wifi-info h3 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .wifi-info p {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 600px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 25px;
+            border-right: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .structure-panel {
+            margin-bottom: 35px;
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #334155;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .structure-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .structure-btn.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .structure-btn {
+            padding: 15px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9em;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .structure-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+
+        .structure-btn.active {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .action-panel {
+            margin-bottom: 35px;
+        }
+
+        .action-form {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9em;
+        }
+
+        /* 参数标签提示行小字号样式 */
+        .param-hint {
+            display: block;
+            font-size: 11px;
+            color: #6b7280; /* slate-500 */
+            font-weight: 400;
+            line-height: 1.2;
+            margin-top: 2px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(100, 116, 139, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        }
+
+
+
+        .timeline-container {
+            padding: 25px;
+            flex: 1;
+            min-width: 0;
+            background: white;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .timeline-header h3 {
+            color: #334155;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .timeline-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .timeline {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 25px;
+            min-height: 400px;
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+            width: 100%;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .timeline-ruler {
+            height: 35px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .timeline-markers {
+            display: flex;
+            height: 100%;
+        }
+
+        .timeline-marker {
+            flex: 1;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .timeline-tracks {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 800px;
+            position: relative;
+        }
+
+        .timeline-track {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .track-label {
+            width: 100px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .track-content {
+            flex: 1;
+            height: 60px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 10px;
+            position: relative;
+            border: 1px solid #e2e8f0;
+            overflow: visible;
+            min-width: 600px;
+            z-index: 1;
+        }
+
+        .action-block {
+            position: absolute;
+            height: 60px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-block:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .action-block.rf { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .action-block.lf { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .action-block.rr { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .action-block.lr { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .action-block.ta { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .action-block.re { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+        .action-block.le { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+        .action-block.hd { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+
+        .action-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            flex: 1;
+            min-width: 0;
+            padding: 0 8px;
+        }
+
+        .action-title {
+            font-weight: 700;
+            font-size: 11px;
+            line-height: 1.2;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .action-time {
+            display: flex;
+            flex-direction: column;
+            font-size: 9px;
+            line-height: 1.1;
+            opacity: 0.9;
+        }
+
+        .start-time, .duration-time, .delay-time {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preview-panel {
+            margin-top: 25px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .code-output {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #334155;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .robot-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 220px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .robot-svg {
+            width: 100%;
+            height: 100%;
+            max-width: 300px;
+            max-height: 200px;
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 15px 25px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+
+        .status-indicator.disconnected {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e2e8f0;
+        }
+
+        .close {
+            color: #64748b;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #334155;
+        }
+
+        .drag-handle {
+            cursor: move;
+            padding: 3px 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: rgba(255,255,255,0.6);
+            cursor: ew-resize;
+            border-radius: 3px;
+        }
+
+        /* 机器人部位激活状态样式 */
+        .robot-part.active {
+            fill: #3b82f6 !important;
+            stroke: #1d4ed8 !important;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
+        }
+
+        .robot-part.active:hover {
+            fill: #1d4ed8 !important;
+            stroke: #1e40af !important;
+            filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.4));
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 280px 1fr;
+            }
+            
+            .sidebar {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .timeline-container {
+                padding: 20px;
+            }
+        }
+
+        /* 自定义下拉菜单样式 */
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .custom-select-header:hover {
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .custom-select-header:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .dropdown-arrow {
+            color: #64748b;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .custom-select.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .custom-select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .custom-option:hover {
+            background-color: #eff6ff;
+        }
+
+        .custom-option.selected {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .selected-option {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Code Editor样式 */
+        .code-editor-panel {
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .code-editor-container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .code-editor-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 20px;
+            border: none;
+            outline: none;
+            resize: vertical;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .code-editor-textarea:focus {
+            background: white;
+            box-shadow: inset 0 0 0 2px #3b82f6;
+        }
+
+        .code-editor-textarea::placeholder {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .code-editor-info {
+            background: #f1f5f9;
+            padding: 15px 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #475569;
+            min-width: 120px;
+            margin-right: 10px;
+        }
+
+        .info-text {
+            color: #64748b;
+            flex: 1;
+        }
+
+        /* Code Editor按钮样式 */
+        .code-editor-panel .btn {
+            font-size: 12px;
+            padding: 8px 16px;
+        }
+        
+        /* Preset Commands选择器样式 */
+        .preset-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .preset-dropdown {
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+        
+        .preset-dropdown:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        .preset-dropdown:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .preset-dropdown option {
+            padding: 8px;
+            font-size: 12px;
+        }
+        
+        /* Preset info显示样式 */
+        .preset-info {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(34, 197, 94, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #22c55e;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 动作块播放状态样式 */
+        .action-block.playing {
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.8) !important;
+            transform: scale(1.05);
+            z-index: 20;
+            animation: pulse 1s infinite;
+        }
+
+        .action-block.sent {
+            opacity: 0.7;
+            position: relative;
+        }
+
+        .action-block.sent::after {
+            content: '✓';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #10b981;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(79, 172, 254, 0.8); }
+            50% { box-shadow: 0 0 30px rgba(79, 172, 254, 1); }
+            100% { box-shadow: 0 0 20px rgba(79, 172, 254, 0.8); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MojiKit: Behavior Control Studio</h1>
+            <p>Execute on PC, connect to ESP32 via WiFi, and design multi-structure concurrent control action sequences through visual interface</p>
+            <div class="wifi-info">
+                <h3>📡 WiFi Connection Information</h3>
+                <p><strong>Network Name:</strong> RobotControl</p>
+                <p><strong>Password:</strong> 12345678</p>
+                <p><strong>ESP32 IP Address:</strong> 192.168.4.1</p>
+                <p><strong>Usage Instructions:</strong> First connect to ESP32's WiFi hotspot, then use this webpage to send commands</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="structure-panel">
+                    <div class="panel-title">🏗️ Structure Selection</div>
+                    <div class="structure-grid">
+                        <!-- 第一行：Left EarLE、Right EarRE -->
+                        <div class="structure-btn" data-structure="LE">
+                            <svg width="20" height="20" viewBox="0 0 78 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M22.4679 22.4684C24.9539 19.9824 28.4908 18.5876 32.7437 18.127C36.997 17.6665 41.8275 18.1587 46.6794 19.3127C56.4491 21.6364 65.7897 26.5099 70.1479 30.8681C72.2861 33.0063 72.7121 34.4994 72.6027 35.5948C72.4815 36.8074 71.6545 38.2087 69.8157 40.0225C68.0007 41.8129 65.547 43.6838 62.6701 45.9418C59.8403 48.1628 56.6889 50.6938 53.6911 53.6916C50.6933 56.6894 48.1622 59.8409 45.9412 62.6706C43.6832 65.5476 41.8124 68.0013 40.022 69.8163C38.2082 71.6549 36.8075 72.4814 35.595 72.6026C34.4995 72.712 33.0066 72.2861 30.8682 70.1477C26.5101 65.7895 21.6367 56.4488 19.3129 46.6792C18.1588 41.8275 17.666 36.9974 18.1265 32.7443C18.587 28.4913 19.9819 24.9545 22.4679 22.4684Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M31.2864 31.7749C32.6145 30.447 34.5489 29.6563 36.9909 29.3919C39.4334 29.1274 42.2449 29.4082 45.1054 30.0886C50.8922 31.465 56.3611 34.3437 58.8463 36.8289C60.048 38.0307 60.1258 38.7066 60.0935 39.0303C60.0494 39.4712 59.7246 40.1456 58.6502 41.2055C57.5992 42.2423 56.1706 43.3316 54.418 44.7072C52.7126 46.0457 50.7845 47.5935 48.9448 49.4332C47.105 51.273 45.5566 53.2017 44.2181 54.9071C42.8426 56.6596 41.7537 58.0877 40.7171 59.1387C39.6573 60.213 38.9828 60.5377 38.5419 60.5819C38.2182 60.6142 37.5423 60.5365 36.3405 59.3348C33.8552 56.8495 30.9766 51.3806 29.6002 45.5939C28.9198 42.7334 28.6383 39.9225 28.9027 37.4801C29.1671 35.0378 29.9584 33.103 31.2864 31.7749Z" fill="#D4D4D4" stroke="#D6D6D6" stroke-width="4"/>
+                            </svg>
+                            Left Ear<br>LE
+                        </div>
+                        <div class="structure-btn" data-structure="RE">
+                            <svg width="20" height="20" viewBox="0 0 78 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M55.3544 22.4684C52.8683 19.9824 49.3315 18.5876 45.0785 18.127C40.8253 17.6665 35.9948 18.1587 31.1429 19.3127C21.3732 21.6364 12.0326 26.5099 7.67437 30.8681C5.53618 33.0063 5.11016 34.4994 5.21953 35.5948C5.34072 36.8074 6.16778 38.2087 8.00652 40.0225C9.82159 41.8129 12.2753 43.6838 15.1522 45.9418C17.982 48.1628 21.1334 50.6938 24.1312 53.6916C27.129 56.6894 29.66 59.8409 31.881 62.6706C34.1391 65.5476 36.0099 68.0013 37.8003 69.8163C39.6141 71.6549 41.0147 72.4814 42.2273 72.6026C43.3227 72.712 44.8157 72.2861 46.954 70.1477C51.3122 65.7895 56.1856 56.4488 58.5094 46.6792C59.6634 41.8275 60.1562 36.9974 59.6957 32.7443C59.2353 28.4913 57.8404 24.9545 55.3544 22.4684Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M46.5358 31.7749C45.2078 30.447 43.2734 29.6563 40.8313 29.3919C38.3888 29.1274 35.5774 29.4082 32.7169 30.0886C26.9301 31.465 21.4611 34.3437 18.9759 36.8289C17.7742 38.0307 17.6965 38.7066 17.7288 39.0303C17.7729 39.4712 18.0976 40.1456 19.172 41.2055C20.2231 42.2423 21.6516 43.3316 23.4043 44.7072C25.1097 46.0457 27.0378 47.5935 28.8775 49.4332C30.7173 51.273 32.2656 53.2017 33.6042 54.9071C34.9797 56.6596 36.0685 58.0877 37.1052 59.1387C38.1649 60.213 38.8395 60.5377 39.2804 60.5819C39.6041 60.6142 40.28 60.5365 41.4818 59.3348C43.9671 56.8495 46.8456 51.3806 48.2221 45.5939C48.9025 42.7334 49.184 39.9225 48.9195 37.4801C48.6551 35.0378 47.8639 33.103 46.5358 31.7749Z" fill="#D4D4D4" stroke="#D6D6D6" stroke-width="4"/>
+                            </svg>
+                            Right Ear<br>RE
+                        </div>
+                        <!-- 第二行：HeadHD -->
+                        <div class="structure-btn full-width" data-structure="HD">
+                            <svg width="20" height="20" viewBox="0 0 72 46" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M35.9141 43.7086C28.045 43.7086 21.2635 43.09 16.499 41.0543C14.1558 40.0532 12.3984 38.7488 11.2197 37.0934C10.0518 35.4529 9.34578 33.3192 9.3457 30.4625C9.3457 19.0429 20.9175 8.52991 35.9141 8.52991C50.9104 8.53004 62.4814 19.043 62.4814 30.4625C62.4814 33.3192 61.7754 35.4528 60.6074 37.0934C59.4288 38.7488 57.6713 40.0532 55.3281 41.0543C50.5638 43.0899 43.7829 43.7086 35.9141 43.7086Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M10.3428 7.12658C11.1173 6.67938 12.1676 6.51775 13.5139 6.72667C14.8603 6.93564 16.3639 7.49738 17.8687 8.3103C20.9382 9.96852 23.5388 12.4049 24.5007 14.0707C24.7856 14.5642 24.8173 14.8042 24.8175 14.8812C24.7779 14.9395 24.6067 15.1528 24.0005 15.4973C23.2775 15.9082 22.3328 16.2964 21.0737 16.8342C19.8695 17.3485 18.4687 17.9649 17.0674 18.7739C15.6662 19.583 14.4325 20.4875 13.3852 21.2731C12.2898 22.0947 11.4813 22.7187 10.764 23.1394C10.1599 23.4937 9.88986 23.5345 9.8211 23.5394C9.75407 23.5003 9.56266 23.3516 9.27844 22.8593C8.31671 21.1933 7.50714 17.7229 7.60577 14.2356C7.65415 12.5259 7.91947 10.9429 8.41167 9.67247C8.90384 8.4022 9.56833 7.57382 10.3428 7.12658Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M61.6572 7.12658C60.8827 6.67938 59.8324 6.51775 58.4861 6.72667C57.1397 6.93564 55.6361 7.49738 54.1313 8.3103C51.0618 9.96852 48.4612 12.4049 47.4993 14.0707C47.2144 14.5642 47.1827 14.8042 47.1825 14.8812C47.2221 14.9395 47.3933 15.1528 47.9995 15.4973C48.7225 15.9082 49.6672 16.2964 50.9263 16.8342C52.1305 17.3485 53.5313 17.9649 54.9326 18.7739C56.3338 19.583 57.5675 20.4875 58.6148 21.2731C59.7102 22.0947 60.5187 22.7187 61.236 23.1394C61.8401 23.4937 62.1101 23.5345 62.1789 23.5394C62.2459 23.5003 62.4373 23.3516 62.7216 22.8593C63.6833 21.1933 64.4929 17.7229 64.3942 14.2356C64.3459 12.5259 64.0805 10.9429 63.5883 9.67247C63.0962 8.4022 62.4317 7.57382 61.6572 7.12658Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                            </svg>
+                            Head<br>HD
+                        </div>
+                        <!-- 第三行：Left Front LegLF、Right Front LegRF -->
+                        <div class="structure-btn" data-structure="LF">
+                            <svg width="20" height="20" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M4.63732 44.4722C5.20596 42.35 6.8055 40.6091 8.98084 39.5437C11.1613 38.4759 13.772 38.1676 16.1064 38.793C20.49 39.9676 22.5587 44.1962 21.2892 48.9341C20.0196 53.6716 16.1141 56.2987 11.7305 55.1241C9.39609 54.4986 7.28936 52.9263 5.93491 50.9112C4.58377 48.9011 4.0688 46.5943 4.63732 44.4722Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M61.61 11.5789C59.4878 11.0103 57.1804 11.5251 55.17 12.8763C53.155 14.2307 51.5827 16.3375 50.9572 18.6718C49.7826 23.0555 52.4104 26.9613 57.1482 28.2308C61.8858 29.5001 66.1137 27.4313 67.2883 23.0478C67.9137 20.7133 67.6055 18.1027 66.5376 15.9222C65.4723 13.747 63.7321 12.1476 61.61 11.5789Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M11.8749 18.0282C13.428 16.4752 15.682 15.7675 18.0966 15.9318C20.5172 16.0964 22.9303 17.1334 24.6374 18.8403C27.8423 22.0452 27.52 26.7381 24.0525 30.2058C20.5848 33.6734 15.892 33.9957 12.687 30.7907C10.9801 29.0837 9.94252 26.6711 9.77775 24.2506C9.61345 21.8359 10.3217 19.5814 11.8749 18.0282Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M35.07 4.63656C32.9485 5.2051 31.2087 6.80321 30.1436 8.97649C29.0759 11.1551 28.7673 13.7634 29.3921 16.0952C30.5651 20.4732 34.7905 22.5406 39.5273 21.2714C44.2642 20.0022 46.8897 16.0991 45.7166 11.7211C45.0917 9.38939 43.5211 7.2845 41.5073 5.93158C39.4983 4.58191 37.1917 4.06807 35.07 4.63656Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M35.2745 31.7218C42.2115 27.7167 49.4583 29.36 54.8456 33.1004C57.5399 34.9712 59.6737 37.3121 60.9729 39.5785C62.3084 41.9084 62.5933 43.8415 62.2036 45.0734C61.6805 46.7264 60.8928 47.7883 59.9899 48.5379C59.0605 49.3094 57.9101 49.8312 56.5476 50.2457C55.1345 50.6754 53.738 50.9278 52.1325 51.3017C50.6238 51.6531 48.9732 52.1064 47.5259 52.942C46.0719 53.7814 44.9757 54.8906 44.0523 55.9274C43.0654 57.0354 42.3748 57.9306 41.4546 58.8187C40.5993 59.644 39.6725 60.3223 38.4814 60.7822C37.286 61.2437 35.713 61.5277 33.5188 61.4056C32.2807 61.3366 30.7656 60.3812 29.3787 58.178C28.0289 56.0336 27.0289 53.0297 26.7301 49.7096C26.1313 43.0577 28.3568 35.7157 35.2745 31.7218Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                            </svg>
+                            Left Front Leg<br>LF
+                        </div>
+                        <div class="structure-btn" data-structure="RF">
+                            <svg width="20" height="20" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M68.3627 44.4722C67.794 42.35 66.1945 40.6091 64.0192 39.5437C61.8387 38.4759 59.228 38.1676 56.8936 38.793C52.51 39.9676 50.4413 44.1962 51.7108 48.9341C52.9804 53.6716 56.8859 56.2987 61.2695 55.1241C63.6039 54.4986 65.7106 52.9263 67.0651 50.9112C68.4162 48.9011 68.9312 46.5943 68.3627 44.4722Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M11.39 11.5789C13.5122 11.0103 15.8196 11.5251 17.83 12.8763C19.845 14.2307 21.4173 16.3375 22.0428 18.6718C23.2174 23.0555 20.5896 26.9613 15.8518 28.2308C11.1142 29.5001 6.8863 27.4313 5.7117 23.0478C5.0863 20.7133 5.3945 18.1027 6.4624 15.9222C7.5277 13.747 9.2679 12.1476 11.39 11.5789Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M61.1251 18.0282C59.572 16.4752 57.318 15.7675 54.9034 15.9318C52.4828 16.0964 50.0697 17.1334 48.3626 18.8403C45.1577 22.0452 45.48 26.7381 48.9475 30.2058C52.4152 33.6734 57.108 33.9957 60.313 30.7907C62.0199 29.0837 63.0575 26.6711 63.2222 24.2506C63.3866 21.8359 62.6783 19.5814 61.1251 18.0282Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M37.93 4.63656C40.0515 5.2051 41.7913 6.80321 42.8564 8.97649C43.9241 11.1551 44.2327 13.7634 43.6079 16.0952C42.4349 20.4732 38.2095 22.5406 33.4727 21.2714C28.7358 20.0022 26.1103 16.0991 27.2834 11.7211C27.9083 9.38939 29.4789 7.2845 31.4927 5.93158C33.5017 4.58191 35.8083 4.06807 37.93 4.63656Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M37.7255 31.7218C30.7885 27.7167 23.5417 29.36 18.1544 33.1004C15.4601 34.9712 13.3263 37.3121 12.0271 39.5785C10.6916 41.9084 10.4067 43.8415 10.7964 45.0734C11.3195 46.7264 12.1072 47.7883 13.0101 48.5379C13.9395 49.3094 15.0899 49.8312 16.4524 50.2457C17.8655 50.6754 19.262 50.9278 20.8675 51.3017C22.3762 51.6531 24.0268 52.1064 25.4741 52.942C26.9281 53.7814 28.0243 54.8906 28.9477 55.9274C29.9346 57.0354 30.6252 57.9306 31.5454 58.8187C32.4007 59.644 33.3275 60.3223 34.5186 60.7822C35.714 61.2437 37.287 61.5277 39.4812 61.4056C40.7193 61.3366 42.2344 60.3812 43.6213 58.178C44.9711 56.0336 45.9711 53.0297 46.2699 49.7096C46.8687 43.0577 44.6432 35.7157 37.7255 31.7218Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                            </svg>
+                            Right Front Leg<br>RF
+                        </div>
+                        <!-- 第四行：Left Hind LegLR、Right Hind LegRR -->
+                        <div class="structure-btn" data-structure="LR">
+                            <svg width="20" height="20" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M4.63732 23.5278C5.20596 25.65 6.8055 27.3909 8.98084 28.4563C11.1613 29.5241 13.772 29.8324 16.1064 29.207C20.49 28.0324 22.5587 23.8038 21.2892 19.0659C20.0196 14.3284 16.1141 11.7013 11.7305 12.8759C9.39609 13.5014 7.28936 15.0737 5.93491 17.0888C4.58377 19.0989 4.0688 21.4057 4.63732 23.5278Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M61.61 56.4211C59.4878 56.9897 57.1804 56.4749 55.17 55.1237C53.155 53.7693 51.5827 51.6625 50.9572 49.3282C49.7826 44.9445 52.4104 41.0387 57.1482 39.7692C61.8858 38.4999 66.1137 40.5687 67.2883 44.9522C67.9137 47.2867 67.6055 49.8973 66.5376 52.0778C65.4723 54.253 63.7321 55.8524 61.61 56.4211Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M11.8749 49.9718C13.428 51.5248 15.682 52.2325 18.0966 52.0682C20.5172 51.9036 22.9303 50.8666 24.6374 49.1597C27.8423 45.9548 27.52 41.2619 24.0525 37.7942C20.5848 34.3266 15.892 34.0043 12.687 37.2093C10.9801 38.9163 9.94252 41.3289 9.77775 43.7494C9.61345 46.1641 10.3217 48.4186 11.8749 49.9718Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M35.07 63.3634C32.9485 62.7949 31.2087 61.1968 30.1436 59.0235C29.0759 56.8449 28.7673 54.2366 29.3921 51.9048C30.5651 47.5268 34.7905 45.4594 39.5273 46.7286C44.2642 47.9978 46.8897 51.9009 45.7166 56.2789C45.0917 58.6106 43.5211 60.7155 41.5073 62.0684C39.4983 63.4181 37.1917 63.9319 35.07 63.3634Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M35.2745 36.2782C42.2115 40.2833 49.4583 38.64 54.8456 34.8996C57.5399 33.0288 59.6737 30.6879 60.9729 28.4215C62.3084 26.0916 62.5933 24.1585 62.2036 22.9266C61.6805 21.2736 60.8928 20.2117 59.9899 19.4621C59.0605 18.6906 57.9101 18.1688 56.5476 17.7543C55.1345 17.3246 53.738 17.0722 52.1325 16.6983C50.6238 16.3469 48.9732 15.8936 47.5259 15.058C46.0719 14.2186 44.9757 13.1094 44.0523 12.0726C43.0654 10.9646 42.3748 10.0694 41.4546 9.1813C40.5993 8.356 39.6725 7.6777 38.4814 7.2178C37.286 6.7563 35.713 6.4723 33.5188 6.5944C32.2807 6.6634 30.7656 7.6188 29.3787 9.822C28.0289 11.9664 27.0289 14.9703 26.7301 18.2904C26.1313 24.9423 28.3568 32.2843 35.2745 36.2782Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                            </svg>
+                            Left Hind Leg<br>LR
+                        </div>
+                        <div class="structure-btn" data-structure="RR">
+                            <svg width="20" height="20" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M68.3627 23.5278C67.794 25.65 66.1945 27.3909 64.0192 28.4563C61.8387 29.5241 59.228 29.8324 56.8936 29.207C52.51 28.0324 50.4413 23.8038 51.7108 19.0659C52.9804 14.3284 56.8859 11.7013 61.2695 12.8759C63.6039 13.5014 65.7106 15.0737 67.0651 17.0888C68.4162 19.0989 68.9312 21.4057 68.3627 23.5278Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M11.39 56.4211C13.5122 56.9897 15.8196 56.4749 17.83 55.1237C19.845 53.7693 21.4173 51.6625 22.0428 49.3282C23.2174 44.9445 20.5896 41.0387 15.8518 39.7692C11.1142 38.4999 6.8863 40.5687 5.7117 44.9522C5.0863 47.2867 5.3945 49.8973 6.4624 52.0778C7.5277 54.253 9.2679 55.8524 11.39 56.4211Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M61.1251 49.9718C59.572 51.5248 57.318 52.2325 54.9034 52.0682C52.4828 51.9036 50.0697 50.8666 48.3626 49.1597C45.1577 45.9548 45.48 41.2619 48.9475 37.7942C52.4152 34.3266 57.108 34.0043 60.313 37.2093C62.0199 38.9163 63.0575 41.3289 63.2222 43.7494C63.3866 46.1641 62.6783 48.4186 61.1251 49.9718Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M37.93 63.3634C40.0515 62.7949 41.7913 61.1968 42.8564 59.0235C43.9241 56.8449 44.2327 54.2366 43.6079 51.9048C42.4349 47.5268 38.2095 45.4594 33.4727 46.7286C28.7358 47.9978 26.1103 51.9009 27.2834 56.2789C27.9083 58.6106 29.4789 60.7155 31.4927 62.0684C33.5017 63.4181 35.8083 63.9319 37.93 63.3634Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M37.7255 36.2782C30.7885 40.2833 23.5417 38.64 18.1544 34.8996C15.4601 33.0288 13.3263 30.6879 12.0271 28.4215C10.6916 26.0916 10.4067 24.1585 10.7964 22.9266C11.3195 21.2736 12.1072 20.2117 13.0101 19.4621C13.9395 18.6906 15.0899 18.1688 16.4524 17.7543C17.8655 17.3246 19.262 17.0722 20.8675 16.6983C22.3762 16.3469 24.0268 15.8936 25.4741 15.058C26.9281 14.2186 28.0243 13.1094 28.9477 12.0726C29.9346 10.9646 30.6252 10.0694 31.5454 9.1813C32.4007 8.356 33.3275 7.6777 34.5186 7.2178C35.714 6.7563 37.287 6.4723 39.4812 6.5944C40.7193 6.6634 42.2344 7.6188 43.6213 9.822C44.9711 11.9664 45.9711 14.9703 46.2699 18.2904C46.8687 24.9423 44.6432 32.2843 37.7255 36.2782Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                            </svg>
+                            Right Hind Leg<br>RR
+                        </div>
+                        <!-- 第五行：TailTA -->
+                        <div class="structure-btn full-width" data-structure="TA">
+                            <svg width="20" height="20" viewBox="0 0 62 65" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M13.0144 16.8984C9.4671 18.9932 7.63895 21.0742 6.83042 22.985C6.04118 24.8504 6.11008 26.8235 6.91895 28.9884C8.60746 33.5074 13.2999 38.3016 18.5917 42.954C20.8529 44.9419 24.3317 46.4003 28.4977 47.2209C32.6328 48.0353 37.2721 48.1867 41.6826 47.7058C46.1057 47.2235 50.1839 46.1177 53.2438 44.5038C56.0508 43.0233 57.7512 41.2586 58.3708 39.3754C57.5715 37.8245 56.2155 37.0331 54.172 36.6239C51.7385 36.1366 48.7846 36.2794 45.343 36.3167C42.0637 36.3523 38.3964 36.2834 35.1596 35.1169C31.7805 33.8991 28.9371 31.513 27.322 27.1929C25.2373 21.617 23.2377 18.0378 21.0311 16.3527C20.0063 15.5702 18.9546 15.2132 17.7643 15.2456C16.5251 15.2794 14.9738 15.7413 13.0144 16.8984Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                <path d="M44.793 36.1015C43.2876 33.942 56.0874 37.0528 57.5927 39.2123C56.2216 44.179 39.154 51.3771 39.2833 46.9661C39.4394 41.6431 48.603 41.5674 44.793 36.1015Z" fill="#D9D9D9" stroke="#D6D6D6"/>
+                            </svg>
+                            Tail<br>TA
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <div class="panel-title">⚙️ Action Editing</div>
+                    <div class="action-form">
+                        <div class="form-group">
+                            <label for="forwardAngle">Forward Angle (F)</label>
+                            <input type="number" id="forwardAngle" min="-90" max="90" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="bendAngle">Bend Angle (R)</label>
+                            <input type="number" id="bendAngle" min="-90" max="90" value="20">
+                        </div>
+                        <div class="form-group">
+                            <label>Speed Level (S)</label>
+                            <select id="speedLevel">
+                                <option value="1">S1 - Slowest (20ms)</option>
+                                <option value="2" selected>S2 - Slow (15ms)</option>
+                                <option value="3">S3 - Medium (10ms)</option>
+                                <option value="4">S4 - Fast (5ms)</option>
+                                <option value="5">S5 - Fastest (2ms)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pre-execution Delay (ms)</label>
+                            <input type="number" id="delayTime" min="0" max="10000" value="0" placeholder="Wait time before execution">
+                        </div>
+                        <button class="btn btn-primary" id="addAction">➕ Add Action</button>
+                    </div>
+                </div>
+
+                <div class="preview-panel">
+                    <div class="panel-title">🤖 Robot Preview</div>
+                    <div class="robot-preview">
+                        <svg class="robot-svg" width="571" height="702" viewBox="0 0 571 702" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="body" class="robot-part" data-part="body" d="M285.894 243.174C334.726 243.174 379.301 269.764 411.816 309.409C444.331 349.052 464.396 401.314 464.396 451.687C464.396 501.874 444.491 540.58 412.444 566.825C380.298 593.151 335.626 607.174 285.894 607.174C236.161 607.174 191.49 593.151 159.346 566.825C127.301 540.58 107.397 501.874 107.396 451.687C107.396 401.314 127.46 349.052 159.974 309.409C192.488 269.764 237.061 243.174 285.894 243.174Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="head" class="robot-part" data-part="HD" d="M285.001 261.5C239.205 261.5 198.512 257.974 169.379 245.61C154.899 239.465 143.499 231.226 135.703 220.35C127.932 209.508 123.5 195.711 123.5 178C123.5 107.175 195.049 44.3683 285.001 44.3682C374.953 44.3682 446.5 107.175 446.5 178C446.5 195.711 442.068 209.508 434.298 220.35C426.502 231.226 415.101 239.465 400.622 245.61C371.49 257.974 330.797 261.5 285.001 261.5Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="tail" class="robot-part" data-part="TA" d="M285.896 558.5C275.885 558.5 266.144 564.834 258.677 577.716C251.217 590.585 246.396 609.499 246.396 633C246.396 656.527 251.227 672.464 258.428 682.4C265.503 692.162 275.117 696.5 285.896 696.5C296.676 696.5 306.291 692.162 313.365 682.4C320.566 672.464 325.396 656.527 325.396 633C325.396 609.498 320.576 590.585 313.116 577.716C305.649 564.834 295.908 558.5 285.896 558.5Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="left-ear" class="robot-part" data-part="LE" d="M131.622 35.2894C137.969 31.6247 145.864 30.7139 154.736 32.0907C163.61 33.4676 173.148 37.0921 182.381 42.0803C200.983 52.1293 217.301 67.1205 223.765 78.3162C226.932 83.8018 226.944 86.9827 226.166 89.0423C225.293 91.3497 222.919 93.7087 218.198 96.3918C213.541 99.0379 207.542 101.502 200.441 104.535C193.464 107.515 185.651 110.956 177.894 115.435C170.136 119.914 163.25 124.959 157.18 129.511C151.003 134.145 145.87 138.108 141.251 140.817C136.567 143.564 133.336 144.441 130.902 144.043C128.729 143.687 125.981 142.086 122.814 136.6C116.35 125.405 111.526 103.777 112.124 82.6433C112.421 72.1528 114.05 62.0806 117.294 53.7079C120.538 45.3354 125.274 38.9542 131.622 35.2894Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="right-ear" class="robot-part" data-part="RE" d="M437.378 35.2894C431.031 31.6247 423.136 30.7139 414.264 32.0907C405.39 33.4676 395.852 37.0921 386.619 42.0803C368.017 52.1293 351.699 67.1205 345.235 78.3162C342.068 83.8018 342.056 86.9827 342.834 89.0423C343.707 91.3497 346.081 93.7087 350.802 96.3918C355.459 99.0379 361.458 101.502 368.559 104.535C375.536 107.515 383.349 110.956 391.106 115.435C398.864 119.914 405.75 124.959 411.82 129.511C417.997 134.145 423.13 138.108 427.749 140.817C432.433 143.564 435.664 144.441 438.098 144.043C440.271 143.687 443.019 142.086 446.186 136.6C452.65 125.405 457.474 103.777 456.876 82.6433C456.579 72.1528 454.95 62.0806 451.706 53.7079C448.462 45.3354 443.726 38.9542 437.378 35.2894Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="left-front-leg" class="robot-part" data-part="LF" d="M51.8204 253.471C45.8296 224.122 49.6188 197.913 67.2573 185.602C74.3726 180.636 79.068 180.249 82.7004 181.528C86.7827 182.964 90.8495 186.907 95.6693 193.584C100.5 200.275 105.212 208.377 111.385 217.726C117.414 226.858 124.525 236.654 133.562 245.691C142.588 254.716 151.521 261.166 159.298 266.409C167.265 271.779 173.469 275.556 177.929 279.634C182.14 283.485 184.142 287.046 184.182 291.721C184.225 296.795 181.975 303.917 175.573 314.766C163.949 334.465 150.317 345.713 136.186 348.424C122.237 351.1 106.37 345.711 89.5402 328.881C72.8218 312.163 57.7389 282.465 51.8204 253.471Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="right-front-leg" class="robot-part" data-part="RF" d="M519.076 253.471C525.067 224.122 521.278 197.913 503.639 185.602C496.524 180.636 491.828 180.249 488.196 181.528C484.114 182.964 480.047 186.907 475.227 193.584C470.397 200.275 465.685 208.377 459.512 217.726C453.482 226.858 446.371 236.654 437.334 245.691C428.309 254.716 419.376 261.166 411.599 266.409C403.632 271.779 397.427 275.556 392.968 279.634C388.756 283.485 386.754 287.046 386.715 291.721C386.671 296.795 388.921 303.917 395.323 314.766C406.948 334.465 420.579 345.713 434.71 348.424C448.659 351.1 464.527 345.711 481.356 328.881C498.075 312.163 513.158 282.465 519.076 253.471Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="left-back-leg" class="robot-part" data-part="LR" d="M51.8204 615.982C45.8296 645.331 49.6188 671.54 67.2573 683.851C74.3726 688.817 79.068 689.203 82.7004 687.925C86.7827 686.488 90.8495 682.545 95.6693 675.869C100.5 669.178 105.212 661.075 111.385 651.726C117.414 642.595 124.525 632.799 133.562 623.762C142.588 614.736 151.521 608.286 159.298 603.044C167.265 597.673 173.469 593.896 177.929 589.819C182.14 585.968 184.142 582.407 184.182 577.732C184.225 572.657 181.975 565.536 175.573 554.686C163.949 534.988 150.317 523.739 136.186 521.028C122.237 518.352 106.37 523.742 89.5402 540.571C72.8218 557.29 57.7389 586.987 51.8204 615.982Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="right-back-leg" class="robot-part" data-part="RR" d="M519.076 615.982C525.067 645.331 521.278 671.54 503.639 683.851C496.524 688.817 491.828 689.203 488.196 687.925C484.114 686.488 480.047 682.545 475.227 675.869C470.397 669.178 465.685 661.075 459.512 651.726C453.482 642.595 446.371 632.799 437.334 623.762C428.309 614.736 419.376 608.286 411.599 603.044C403.632 597.673 397.427 593.896 392.968 589.819C388.756 585.968 386.754 582.407 386.715 577.732C386.671 572.657 388.921 565.536 395.323 554.686C406.948 534.988 420.579 523.739 434.71 521.028C448.659 518.352 464.527 523.742 481.356 540.571C498.075 557.29 513.158 586.987 519.076 615.982Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-container">
+                <div class="timeline-header">
+                    <h3>⏰ Timeline Editor</h3>
+                    <div class="timeline-controls">
+                        <button class="btn btn-secondary" id="zoomIn">🔍+</button>
+                        <button class="btn btn-secondary" id="zoomOut">🔍-</button>
+                        <button class="btn btn-secondary" id="fitToView">📐 Fit to View</button>
+                        <button class="btn btn-secondary" id="clearSequence">🗑️ Clear</button>
+                    </div>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-ruler">
+                        <div class="timeline-markers" id="timelineMarkers">
+                            <!-- 时间标记将通过JavaScript生成 -->
+                        </div>
+                    </div>
+                    <div class="timeline-tracks" id="timelineTracks">
+                        <!-- 轨道将通过JavaScript生成 -->
+                    </div>
+                </div>
+
+                <div class="code-editor-panel">
+                    <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>📝 Code Editor</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div class="preset-selector" style="display: flex; align-items: center; gap: 8px;">
+                                <label for="presetSelector" style="font-size: 12px; color: #6b7280;">📚 Preset Commands:</label>
+                                <select id="presetSelector" class="preset-dropdown" style="padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; background: white;">
+                                    <option value="">Select a preset...</option>
+                                    <option value="raise_right_front_paw">🐾 Raise Right Front Paw</option>
+                                    <option value="raise_both_front_paws">🐾 Raise Both Front Paws</option>
+                                    <option value="reach_out_hug">🤗 Reach Out Hug</option>
+                                    <option value="clap">👏 Clap</option>
+                                    <option value="wag_tail_excited">🐕 Tail Wag (Excited)</option>
+                                    <option value="wag_tail_relaxed">🐕 Tail Wag (Relaxed)</option>
+                                    <option value="hind_leg_stretch">🦵 Hind Leg Stretch</option>
+                                    <option value="horizontal_tail_wag">🐕 Horizontal Tail Wag</option>
+                                    <option value="tail_upward">🐕 Tail Up</option>
+                                    <option value="ears_perk_turn">👂 Ears Perk & Turn</option>
+                                    <option value="head_nod">👍 Head Nod</option>
+                                    <option value="head_shake">👎 Head Shake</option>
+                                    <option value="greet">👋 Greet</option>
+                                    <option value="stretch">🧘 Stretch</option>
+                                    <option value="act_cute">😊 Act Cute</option>
+                                    <option value="custom">✏️ Custom Edit</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" id="syncToTimeline">🔄 Sync to Timeline</button>
+                            <button class="btn btn-secondary" id="formatCode" style="display: none;">✨ Format Code</button>
+                        </div>
+                    </div>
+                    <div class="code-editor-container">
+                        <textarea id="codeEditor" class="code-editor-textarea" placeholder="Enter or edit action sequence commands directly here...&#10;&#10;Format Example:&#10;RF F30 R20 S2 D0&#10;LF F-30 R15 S2 D500&#10;HD F0 R45 S3 D1000"></textarea>
+                        <div class="code-editor-info">
+                            <div class="info-item">
+                                <span class="info-label">📋 Command Format:</span>
+                                <span class="info-text">Structure F-angle R-angle S-speed @Time Control</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">⏰ Time Control:</span>
+                                <span class="info-text">D0(Immediately), D500(Delay 500ms), D1000(Delay 1000ms)</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">💡 Tip:</span>
+                                <span class="info-text">After editing the code, click "Sync to Timeline" to update the visual editor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <div class="panel-title">🎮 Control Panel</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" id="playSequence">▶️ Play Sequence</button>
+                            <button class="btn btn-secondary" id="pauseSequence">⏸️ Pause</button>
+                            <button class="btn btn-secondary" id="stopSequence">⏹️ Stop</button>
+                            <button class="btn btn-secondary" id="resetAll">🔄 Reset</button>
+                        </div>
+                        <button class="btn btn-secondary" id="exportCode">📋 Copy Commands</button>
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border-left: 4px solid #3b82f6;">
+                        <div style="font-size: 12px; color: #1e40af; font-weight: 500;">
+                            🚀 <strong>Parallel Execution Mode</strong>
+                        </div>
+                        <div style="font-size: 11px; color: #374151; margin-top: 5px;">
+                            All actions will be sent to the Arduino in a single batch, with different mechanisms executing their action sequences simultaneously.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-panel">
+                    <div class="panel-title">
+                        <span>📝 Console</span>
+                    </div>
+                    <div class="code-output" id="codeOutput" style="min-height: 100px;">
+// 动作序列代码将在这里显示
+// 例如: RF F30 R20 S2 D0;LF F-30 R15 S2 D500;HD F0 R45 S3 D1000
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator" id="connectionStatus"></div>
+                <span id="connectionText">Not connected</span>
+            </div>
+            <div class="status-item">
+                <span>Number of actions: <span id="actionCount">0</span></span>
+            </div>
+            <div class="status-item">
+                <span>Total duration: <span id="totalDuration">0ms</span></span>
+            </div>
+            <div class="status-item">
+                <span id="networkStatus" style="font-size: 12px; opacity: 0.8;">🌐 Network Status: Checking Medium...</span>
+            </div>
+            <div class="status-item">
+                <span style="font-size: 12px; opacity: 0.8;">💡 Tip: Connect to the Wi-Fi hotspot first, then test the connection.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Editing模态框 -->
+    <div id="actionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Edit Action</h3>
+            <div class="action-form">
+                <div class="form-group">
+                    <label>Structure</label>
+                    <div class="custom-select" id="editStructureContainer">
+                        <div class="custom-select-header" id="editStructureHeader">
+                            <span class="selected-option">
+                                <svg width="16" height="16" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M68.3627 44.4722C67.794 42.35 66.1945 40.6091 64.0192 39.5437C61.8387 38.4759 59.228 38.1676 56.8936 38.793C52.51 39.9676 50.4413 44.1962 51.7108 48.9341C52.9804 53.6716 56.8859 56.2987 61.2695 55.1241C63.6039 54.4986 65.7106 52.9263 67.0651 50.9112C68.4162 48.9011 68.9312 46.5943 68.3627 44.4722Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M11.39 11.5789C13.5122 11.0103 15.8196 11.5251 17.83 12.8763C19.845 14.2307 21.4173 16.3375 22.0428 18.6718C23.2174 23.0555 20.5896 26.9613 15.8518 28.2308C11.1142 29.5001 6.8863 27.4313 5.7117 23.0478C5.0863 20.7133 5.3945 18.1027 6.4624 15.9222C7.5277 13.747 9.2679 12.1476 11.39 11.5789Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M61.1251 18.0282C59.572 16.4752 57.318 15.7675 54.9034 15.9318C52.4828 16.0964 50.0697 17.1334 48.3626 18.8403C45.1577 22.0452 45.48 26.7381 48.9475 30.2058C52.4152 33.6734 57.108 33.9957 60.313 30.7907C62.0199 29.0837 63.0575 26.6711 63.2222 24.2506C63.3866 21.8359 62.6783 19.5814 61.1251 18.0282Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M37.93 4.63656C40.0515 5.2051 41.7913 6.80321 42.8564 8.97649C43.9241 11.1551 44.2327 13.7634 43.6079 16.0952C42.4349 20.4732 38.2095 22.5406 33.4727 21.2714C28.7358 20.0022 26.1103 16.0991 27.2834 11.7211C27.9083 9.38939 29.4789 7.2845 31.4927 5.93158C33.5017 4.58191 35.8083 4.06807 37.93 4.63656Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M37.7255 31.7218C30.7885 27.7167 23.5417 29.36 18.1544 33.1004C15.4601 34.9712 13.3263 37.3121 12.0271 39.5785C10.6916 41.9084 10.4067 43.8415 10.7964 45.0734C11.3195 46.7264 12.1072 47.7883 13.0101 48.5379C13.9395 49.3094 15.0899 49.8312 16.4524 50.2457C17.8655 50.6754 19.262 50.9278 20.8675 51.3017C22.3762 51.6531 24.0268 52.1064 25.4741 52.942C26.9281 53.7814 28.0243 54.8906 28.9477 55.9274C29.9346 57.0354 30.6252 57.9306 31.5454 58.8187C32.4007 59.644 33.3275 60.3223 34.5186 60.7822C35.714 61.2437 37.287 61.5277 39.4812 61.4056C40.7193 61.3366 42.2344 60.3812 43.6213 58.178C44.9711 56.0336 45.9711 53.0297 46.2699 49.7096C46.8687 43.0577 44.6432 35.7157 37.7255 31.7218Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Right Front Leg (RF)
+                            </span>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
+                        <div class="custom-select-options" id="editStructureOptions" style="display: none;">
+                            <div class="custom-option" data-value="RF">
+                                <svg width="16" height="16" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M68.3627 44.4722C67.794 42.35 66.1945 40.6091 64.0192 39.5437C61.8387 38.4759 59.228 38.1676 56.8936 38.793C52.51 39.9676 50.4413 44.1962 51.7108 48.9341C52.9804 53.6716 56.8859 56.2987 61.2695 55.1241C63.6039 54.4986 65.7106 52.9263 67.0651 50.9112C68.4162 48.9011 68.9312 46.5943 68.3627 44.4722Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M11.39 11.5789C13.5122 11.0103 15.8196 11.5251 17.83 12.8763C19.845 14.2307 21.4173 16.3375 22.0428 18.6718C23.2174 23.0555 20.5896 26.9613 15.8518 28.2308C11.1142 29.5001 6.8863 27.4313 5.7117 23.0478C5.0863 20.7133 5.3945 18.1027 6.4624 15.9222C7.5277 13.747 9.2679 12.1476 11.39 11.5789Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M61.1251 18.0282C59.572 16.4752 57.318 15.7675 54.9034 15.9318C52.4828 16.0964 50.0697 17.1334 48.3626 18.8403C45.1577 22.0452 45.48 26.7381 48.9475 30.2058C52.4152 33.6734 57.108 33.9957 60.313 30.7907C62.0199 29.0837 63.0575 26.6711 63.2222 24.2506C63.3866 21.8359 62.6783 19.5814 61.1251 18.0282Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M37.93 4.63656C40.0515 5.2051 41.7913 6.80321 42.8564 8.97649C43.9241 11.1551 44.2327 13.7634 43.6079 16.0952C42.4349 20.4732 38.2095 22.5406 33.4727 21.2714C28.7358 20.0022 26.1103 16.0991 27.2834 11.7211C27.9083 9.38939 29.4789 7.2845 31.4927 5.93158C33.5017 4.58191 35.8083 4.06807 37.93 4.63656Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M37.7255 31.7218C30.7885 27.7167 23.5417 29.36 18.1544 33.1004C15.4601 34.9712 13.3263 37.3121 12.0271 39.5785C10.6916 41.9084 10.4067 43.8415 10.7964 45.0734C11.3195 46.7264 12.1072 47.7883 13.0101 48.5379C13.9395 49.3094 15.0899 49.8312 16.4524 50.2457C17.8655 50.6754 19.262 50.9278 20.8675 51.3017C22.3762 51.6531 24.0268 52.1064 25.4741 52.942C26.9281 53.7814 28.0243 54.8906 28.9477 55.9274C29.9346 57.0354 30.6252 57.9306 31.5454 58.8187C32.4007 59.644 33.3275 60.3223 34.5186 60.7822C35.714 61.2437 37.287 61.5277 39.4812 61.4056C40.7193 61.3366 42.2344 60.3812 43.6213 58.178C44.9711 56.0336 45.9711 53.0297 46.2699 49.7096C46.8687 43.0577 44.6432 35.7157 37.7255 31.7218Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Right Front Leg (RF)
+                            </div>
+                            <div class="custom-option" data-value="LF">
+                                <svg width="16" height="16" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M4.63732 44.4722C5.20596 42.35 6.8055 40.6091 8.98084 39.5437C11.1613 38.4759 13.772 38.1676 16.1064 38.793C20.49 39.9676 22.5587 44.1962 21.2892 48.9341C20.0196 53.6716 16.1141 56.2987 11.7305 55.1241C9.39609 54.4986 7.28936 52.9263 5.93491 50.9112C4.58377 48.9011 4.0688 46.5943 4.63732 44.4722Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M61.61 11.5789C59.4878 11.0103 57.1804 11.5251 55.17 12.8763C53.155 14.2307 51.5827 16.3375 50.9572 18.6718C49.7826 23.0555 52.4104 26.9613 57.1482 28.2308C61.8858 29.5001 66.1137 27.4313 67.2883 23.0478C67.9137 20.7133 67.6055 18.1027 66.5376 15.9222C65.4723 13.747 63.7321 12.1476 61.61 11.5789Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M11.8749 18.0282C13.428 16.4752 15.682 15.7675 18.0966 15.9318C20.5172 16.0964 22.9303 17.1334 24.6374 18.8403C27.8423 22.0452 27.52 26.7381 24.0525 30.2058C20.5848 33.6734 15.892 33.9957 12.687 30.7907C10.9801 29.0837 9.94252 26.6711 9.77775 24.2506C9.61345 21.8359 10.3217 19.5814 11.8749 18.0282Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M35.07 4.63656C32.9485 5.2051 31.2087 6.80321 30.1436 8.97649C29.0759 11.1551 28.7673 13.7634 29.3921 16.0952C30.5651 20.4732 34.7905 22.5406 39.5273 21.2714C44.2642 20.0022 46.8897 16.0991 45.7166 11.7211C45.0917 9.38939 43.5211 7.2845 41.5073 5.93158C39.4983 4.58191 37.1917 4.06807 35.07 4.63656Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M35.2745 31.7218C42.2115 27.7167 49.4583 29.36 54.8456 33.1004C57.5399 34.9712 59.6737 37.3121 60.9729 39.5785C62.3084 41.9084 62.5933 43.8415 62.2036 45.0734C61.6805 46.7264 60.8928 47.7883 59.9899 48.5379C59.0605 49.3094 57.9101 49.8312 56.5476 50.2457C55.1345 50.6754 53.738 50.9278 52.1325 51.3017C50.6238 51.6531 48.9732 52.1064 47.5259 52.942C46.0719 53.7814 44.9757 54.8906 44.0523 55.9274C43.0654 57.0354 42.3748 57.9306 41.4546 58.8187C40.5993 59.644 39.6725 60.3223 38.4814 60.7822C37.286 61.2437 35.713 61.5277 33.5188 61.4056C32.2807 61.3366 30.7656 60.3812 29.3787 58.178C28.0289 56.0336 27.0289 53.0297 26.7301 49.7096C26.1313 43.0577 28.3568 35.7157 35.2745 31.7218Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Left Front Leg (LF)
+                            </div>
+                            <div class="custom-option" data-value="RR">
+                                <svg width="16" height="16" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M68.3627 23.5278C67.794 25.65 66.1945 27.3909 64.0192 28.4563C61.8387 29.5241 59.228 29.8324 56.8936 29.207C52.51 28.0324 50.4413 23.8038 51.7108 19.0659C52.9804 14.3284 56.8859 11.7013 61.2695 12.8759C63.6039 13.5014 65.7106 15.0737 67.0651 17.0888C68.4162 19.0989 68.9312 21.4057 68.3627 23.5278Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M11.39 56.4211C13.5122 56.9897 15.8196 56.4749 17.83 55.1237C19.845 53.7693 21.4173 51.6625 22.0428 49.3282C23.2174 44.9445 20.5896 41.0387 15.8518 39.7692C11.1142 38.4999 6.8863 40.5687 5.7117 44.9522C5.0863 47.2867 5.3945 49.8973 6.4624 52.0778C7.5277 54.253 9.2679 55.8524 11.39 56.4211Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M61.1251 49.9718C59.572 51.5248 57.318 52.2325 54.9034 52.0682C52.4828 51.9036 50.0697 50.8666 48.3626 49.1597C45.1577 45.9548 45.48 41.2619 48.9475 37.7942C52.4152 34.3266 57.108 34.0043 60.313 37.2093C62.0199 38.9163 63.0575 41.3289 63.2222 43.7494C63.3866 46.1641 62.6783 48.4186 61.1251 49.9718Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M37.93 63.3634C40.0515 62.7949 41.7913 61.1968 42.8564 59.0235C43.9241 56.8449 44.2327 54.2366 43.6079 51.9048C42.4349 47.5268 38.2095 45.4594 33.4727 46.7286C28.7358 47.9978 26.1103 51.9009 27.2834 56.2789C27.9083 58.6106 29.4789 60.7155 31.4927 62.0684C33.5017 63.4181 35.8083 63.9319 37.93 63.3634Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M37.7255 36.2782C30.7885 40.2833 23.5417 38.64 18.1544 34.8996C15.4601 33.0288 13.3263 30.6879 12.0271 28.4215C10.6916 26.0916 10.4067 24.1585 10.7964 22.9266C11.3195 21.2736 12.1072 20.2117 13.0101 19.4621C13.9395 18.6906 15.0899 18.1688 16.4524 17.7543C17.8655 17.3246 19.262 17.0722 20.8675 16.6983C22.3762 16.3469 24.0268 15.8936 25.4741 15.058C26.9281 14.2186 28.0243 13.1094 28.9477 12.0726C29.9346 10.9646 30.6252 10.0694 31.5454 9.1813C32.4007 8.356 33.3275 7.6777 34.5186 7.2178C35.714 6.7563 37.287 6.4723 39.4812 6.5944C40.7193 6.6634 42.2344 7.6188 43.6213 9.822C44.9711 11.9664 45.9711 14.9703 46.2699 18.2904C46.8687 24.9423 44.6432 32.2843 37.7255 36.2782Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Right Hind Leg (RR)
+                            </div>
+                            <div class="custom-option" data-value="LR">
+                                <svg width="16" height="16" viewBox="0 0 73 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M4.63732 23.5278C5.20596 25.65 6.8055 27.3909 8.98084 28.4563C11.1613 29.5241 13.772 29.8324 16.1064 29.207C20.49 28.0324 22.5587 23.8038 21.2892 19.0659C20.0196 14.3284 16.1141 11.7013 11.7305 12.8759C9.39609 13.5014 7.28936 15.0737 5.93491 17.0888C4.58377 19.0989 4.0688 21.4057 4.63732 23.5278Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M61.61 56.4211C59.4878 56.9897 57.1804 56.4749 55.17 55.1237C53.155 53.7693 51.5827 51.6625 50.9572 49.3282C49.7826 44.9445 52.4104 41.0387 57.1482 39.7692C61.8858 38.4999 66.1137 40.5687 67.2883 44.9522C67.9137 47.2867 67.6055 49.8973 66.5376 52.0778C65.4723 54.253 63.7321 55.8524 61.61 56.4211Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M11.8749 49.9718C13.428 51.5248 15.682 52.2325 18.0966 52.0682C20.5172 51.9036 22.9303 50.8666 24.6374 49.1597C27.8423 45.9548 27.52 41.2619 24.0525 37.7942C20.5848 34.3266 15.892 34.0043 12.687 37.2093C10.9801 38.9163 9.94252 41.3289 9.77775 43.7494C9.61345 46.1641 10.3217 48.4186 11.8749 49.9718Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M35.07 63.3634C32.9485 62.7949 31.2087 61.1968 30.1436 59.0235C29.0759 56.8449 28.7673 54.2366 29.3921 51.9048C30.5651 47.5268 34.7905 45.4594 39.5273 46.7286C44.2642 47.9978 46.8897 51.9009 45.7166 56.2789C45.0917 58.6106 43.5211 60.7155 41.5073 62.0684C39.4983 63.4181 37.1917 63.9319 35.07 63.3634Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M35.2745 36.2782C42.2115 40.2833 49.4583 38.64 54.8456 34.8996C57.5399 33.0288 59.6737 30.6879 60.9729 28.4215C62.3084 26.0916 62.5933 24.1585 62.2036 22.9266C61.6805 21.2736 60.8928 20.2117 59.9899 19.4621C59.0605 18.6906 57.9101 18.1688 56.5476 17.7543C55.1345 17.3246 53.738 17.0722 52.1325 16.6983C50.6238 16.3469 48.9732 15.8936 47.5259 15.058C46.0719 14.2186 44.9757 13.1094 44.0523 12.0726C43.0654 10.9646 42.3748 10.0694 41.4546 9.1813C40.5993 8.356 39.6725 7.6777 38.4814 7.2178C37.286 6.7563 35.713 6.4723 33.5188 6.5944C32.2807 6.6634 30.7656 7.6188 29.3787 9.822C28.0289 11.9664 27.0289 14.9703 26.7301 18.2904C26.1313 24.9423 28.3568 32.2843 35.2745 36.2782Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Left Hind Leg (LR)
+                            </div>
+                            <div class="custom-option" data-value="TA">
+                                <svg width="16" height="16" viewBox="0 0 62 65" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M13.0144 16.8984C9.4671 18.9932 7.63895 21.0742 6.83042 22.985C6.04118 24.8504 6.11008 26.8235 6.91895 28.9884C8.60746 33.5074 13.2999 38.3016 18.5917 42.954C20.8529 44.9419 24.3317 46.4003 28.4977 47.2209C32.6328 48.0353 37.2721 48.1867 41.6826 47.7058C46.1057 47.2235 50.1839 46.1177 53.2438 44.5038C56.0508 43.0233 57.7512 41.2586 58.3708 39.3754C57.5715 37.8245 56.2155 37.0331 54.172 36.6239C51.7385 36.1366 48.7846 36.2794 45.343 36.3167C42.0637 36.3523 38.3964 36.2834 35.1596 35.1169C31.7805 33.8991 28.9371 31.513 27.322 27.1929C25.2373 21.617 23.2377 18.0378 21.0311 16.3527C20.0063 15.5702 18.9546 15.2132 17.7643 15.2456C16.5251 15.2794 14.9738 15.7413 13.0144 16.8984Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M44.793 36.1015C43.2876 33.942 56.0874 37.0528 57.5927 39.2123C56.2216 44.179 39.154 51.3771 39.2833 46.9661C39.4394 41.6431 48.603 41.5674 44.793 36.1015Z" fill="#D9D9D9" stroke="#D6D6D6"/>
+                                </svg>
+                                Tail (TA)
+                            </div>
+                            <div class="custom-option" data-value="RE">
+                                <svg width="16" height="16" viewBox="0 0 78 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M55.3544 22.4684C52.8683 19.9824 49.3315 18.5876 45.0785 18.127C40.8253 17.6665 35.9948 18.1587 31.1429 19.3127C21.3732 21.6364 12.0326 26.5099 7.67437 30.8681C5.53618 33.0063 5.11016 34.4994 5.21953 35.5948C5.34072 36.8074 6.16778 38.2087 8.00652 40.0225C9.82159 41.8129 12.2753 43.6838 15.1522 45.9418C17.982 48.1628 21.1334 50.6938 24.1312 53.6916C27.129 56.6894 29.66 59.8409 31.881 62.6706C34.1391 65.5476 36.0099 68.0013 37.8003 69.8163C39.6141 71.6549 41.0147 72.4814 42.2273 72.6026C43.3227 72.712 44.8157 72.2861 46.954 70.1477C51.3122 65.7895 56.1856 56.4488 58.5094 46.6792C59.6634 41.8275 60.1562 36.9974 59.6957 32.7443C59.2353 28.4913 57.8404 24.9545 55.3544 22.4684Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M46.5358 31.7749C45.2078 30.447 43.2734 29.6563 40.8313 29.3919C38.3888 29.1274 35.5774 29.4082 32.7169 30.0886C26.9301 31.465 21.4611 34.3437 18.9759 36.8289C17.7742 38.0307 17.6965 38.7066 17.7288 39.0303C17.7729 39.4712 18.0976 40.1456 19.172 41.2055C20.2231 42.2423 21.6516 43.3316 23.4043 44.7072C25.1097 46.0457 27.0378 47.5935 28.8775 49.4332C30.7173 51.273 32.2656 53.2017 33.6042 54.9071C34.9797 56.6596 36.0685 58.0877 37.1052 59.1387C38.1649 60.213 38.8395 60.5377 39.2804 60.5819C39.6041 60.6142 40.28 60.5365 41.4818 59.3348C43.9671 56.8495 46.8456 51.3806 48.2221 45.5939C48.9025 42.7334 49.184 39.9225 48.9195 37.4801C48.6551 35.0378 47.8639 33.103 46.5358 31.7749Z" fill="#D4D4D4" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Right Ear (RE)
+                            </div>
+                            <div class="custom-option" data-value="LE">
+                                <svg width="16" height="16" viewBox="0 0 78 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M22.4679 22.4684C24.9539 19.9824 28.4908 18.5876 32.7437 18.127C36.997 17.6665 41.8275 18.1587 46.6794 19.3127C56.4491 21.6364 65.7897 26.5099 70.1479 30.8681C72.2861 33.0063 72.7121 34.4994 72.6027 35.5948C72.4815 36.8074 71.6545 38.2087 69.8157 40.0225C68.0007 41.8129 65.547 43.6838 62.6701 45.9418C59.8403 48.1628 56.6889 50.6938 53.6911 53.6916C50.6933 56.6894 48.1622 59.8409 45.9412 62.6706C43.6832 65.5476 41.8124 68.0013 40.022 69.8163C38.2082 71.6549 36.8075 72.4814 35.595 72.6026C34.4995 72.712 33.0066 72.2861 30.8682 70.1477C26.5101 65.7895 21.6367 56.4488 19.3129 46.6792C18.1588 41.8275 17.666 36.9974 18.1265 32.7443C18.587 28.4913 19.9819 24.9545 22.4679 22.4684Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M31.2864 31.7749C32.6145 30.447 34.5489 29.6563 36.9909 29.3919C39.4334 29.1274 42.2449 29.4082 45.1054 30.0886C50.8922 31.465 56.3611 34.3437 58.8463 36.8289C60.048 38.0307 60.1258 38.7066 60.0935 39.0303C60.0494 39.4712 59.7246 40.1456 58.6502 41.2055C57.5992 42.2423 56.1706 43.3316 54.418 44.7072C52.7126 46.0457 50.7845 47.5935 48.9448 49.4332C47.105 51.273 45.5566 53.2017 44.2181 54.9071C42.8426 56.6596 41.7537 58.0877 40.7171 59.1387C39.6573 60.213 38.9828 60.5377 38.5419 60.5819C38.2182 60.6142 37.5423 60.5365 36.3405 59.3348C33.8552 56.8495 30.9766 51.3806 29.6002 45.5939C28.9198 42.7334 28.6383 39.9225 28.9027 37.4801C29.1671 35.0378 29.9584 33.103 31.2864 31.7749Z" fill="#D4D4D4" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Left Ear (LE)
+                            </div>
+                            <div class="custom-option" data-value="HD">
+                                <svg width="16" height="16" viewBox="0 0 72 46" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M35.9141 43.7086C28.045 43.7086 21.2635 43.09 16.499 41.0543C14.1558 40.0532 12.3984 38.7488 11.2197 37.0934C10.0518 35.4529 9.34578 33.3192 9.3457 30.4625C9.3457 19.0429 20.9175 8.52991 35.9141 8.52991C50.9104 8.53004 62.4814 19.043 62.4814 30.4625C62.4814 33.3192 61.7754 35.4528 60.6074 37.0934C59.4288 38.7488 57.6713 40.0532 55.3281 41.0543C50.5638 43.0899 43.7829 43.7086 35.9141 43.7086Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M10.3428 7.12658C11.1173 6.67938 12.1676 6.51775 13.5139 6.72667C14.8603 6.93564 16.3639 7.49738 17.8687 8.3103C20.9382 9.96852 23.5388 12.4049 24.5007 14.0707C24.7856 14.5642 24.8173 14.8042 24.8175 14.8812C24.7779 14.9395 24.6067 15.1528 24.0005 15.4973C23.2775 15.9082 22.3328 16.2964 21.0737 16.8342C19.8695 17.3485 18.4687 17.9649 17.0674 18.7739C15.6662 19.583 14.4325 20.4875 13.3852 21.2731C12.2898 22.0947 11.4813 22.7187 10.764 23.1394C10.1599 23.4937 9.88986 23.5345 9.8211 23.5394C9.75407 23.5003 9.56266 23.3516 9.27844 22.8593C8.31671 21.1933 7.50714 17.7229 7.60577 14.2356C7.65415 12.5259 7.91947 10.9429 8.41167 9.67247C8.90384 8.4022 9.56833 7.57382 10.3428 7.12658Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                    <path d="M61.6572 7.12658C60.8827 6.67938 59.8324 6.51775 58.4861 6.72667C57.1397 6.93564 55.6361 7.49738 54.1313 8.3103C51.0618 9.96852 48.4612 12.4049 47.4993 14.0707C47.2144 14.5642 47.1827 14.8042 47.1825 14.8812C47.2221 14.9395 47.3933 15.1528 47.9995 15.4973C48.7225 15.9082 49.6672 16.2964 50.9263 16.8342C52.1305 17.3485 53.5313 17.9649 54.9326 18.7739C56.3338 19.583 57.5675 20.4875 58.6148 21.2731C59.7102 22.0947 60.5187 22.7187 61.236 23.1394C61.8401 23.4937 62.1101 23.5345 62.1789 23.5394C62.2459 23.5003 62.4373 23.3516 62.7216 22.8593C63.6833 21.1933 64.4929 17.7229 64.3942 14.2356C64.3459 12.5259 64.0805 10.9429 63.5883 9.67247C63.0962 8.4022 62.4317 7.57382 61.6572 7.12658Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="4"/>
+                                </svg>
+                                Head (HD)
+                            </div>
+                        </div>
+                        <input type="hidden" id="editStructure" value="RF">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editForwardAngle">Forward Angle (F)</label>
+                    <input type="number" id="editForwardAngle" min="-90" max="90">
+                </div>
+                <div class="form-group">
+                    <label for="editBendAngle">Bend Angle (R)</label>
+                    <input type="number" id="editBendAngle" min="-90" max="90">
+                </div>
+                <div class="form-group">
+                    <label>Speed Level (S)</label>
+                    <select id="editSpeedLevel">
+                        <option value="1">S1 - Slowest</option>
+                        <option value="2">S2 - Slow</option>
+                        <option value="3">S3 - Medium</option>
+                        <option value="4">S4 - Fast</option>
+                        <option value="5">S5 - Fastest</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Pre-execution Delay (ms)</label>
+                    <input type="number" id="editDelayTime" min="0" max="10000" placeholder="Wait time before execution">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-primary" id="saveAction">Save</button>
+                    <button class="btn btn-danger" id="deleteAction">Delete</button>
+                    <button class="btn btn-secondary" id="cancelEdit">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+// 动作序列设计器 JavaScript
+class ActionSequenceDesigner {
+    constructor() {
+        this.actions = [];
+        this.selectedStructure = null;
+        this.zoomLevel = 1;
+        this.timelineScale = 100; // 像素/秒
+        this.isPlaying = false;
+        this.currentTime = 0;
+        this.playbackInterval = null;
+        this.editingAction = null;
+        
+        // WiFi连接支持
+        this.isConnected = false;
+        this.connectionMonitor = null;
+        
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.createTimeline();
+        this.updateStatus();
+        this.updateCodeOutput();
+        
+        // 初始化Code Editor
+        this.initCodeEditor();
+        
+        // 初始化参数标签为默认状态
+        this.updateParameterLabels(null);
+        // 清除所有机器人部位的激活状态
+        document.querySelectorAll('.robot-part').forEach(part => {
+            part.classList.remove('active');
+        });
+        
+        // 添加网络状态监控
+        this.monitorNetworkStatus();
+    }
+
+    // 初始化Code Editor
+    initCodeEditor() {
+        const codeEditor = document.getElementById('codeEditor');
+        if (codeEditor) {
+            // 设置初始示例代码
+            const exampleCode = `// Action Sequence Command Example
+// Formate: Structure F-angle R-angle S-speed @Time Control
+
+        RF F30 R20 S2 D0
+        LF F-30 R15 S2 D500
+        HD F0 R45 S3 D1000
+        TA F20 R10 S2 D1500`;
+            
+            codeEditor.value = exampleCode;
+            
+            // 添加输入事件监听，实时更新代码输出
+            codeEditor.addEventListener('input', () => {
+                // 可以在这里添加实时语法检查等功能
+            });
+        }
+        
+        // 初始化Preset Commands选择器
+        this.initPresetSelector();
+    }
+    
+    // 初始化Preset Commands选择器
+    initPresetSelector() {
+        const presetSelector = document.getElementById('presetSelector');
+        if (presetSelector) {
+            presetSelector.addEventListener('change', (e) => {
+                this.loadPresetCode(e.target.value);
+            });
+        }
+    }
+    
+    // Preset Commands数据
+    getPresetCode(presetType) {
+        const presets = {
+            raise_right_front_paw: {
+                name: "Raise Right Front Paw",
+                description: "The right front paw lifts and bends, then lowers, like a cat raising its paw to signal.",
+                code: `
+        RF F50 R30 S4 D0
+        RF F0 R0 S2 D200`
+            },
+            raise_both_front_paws: {
+                name: "Raise Both Front Paws",
+                description: "Both paws raised simultaneously, like a cat begging for attention.",
+                code: `
+        RF F70 R15 S3 D0
+        LF F70 R15 S3 D0
+        RF F0 R0 S2 D200
+        LF F0 R0 S2 D200`
+            },
+            reach_out_hug: {
+                name: "Reach Out Hug",
+                description: "Alternately lifting and closing both paws, like a cat stretching its arms for a hug.",
+                code: `
+        RF F70 R15 S3 D0
+        LF F70 R15 S3 D0
+        RF F20 R15 S3 D0
+        LF F20 R15 S3 D0
+        RF F70 R15 S3 D0
+        LF F70 R15 S3 D0
+        RF F0 R0 S3 D200
+        LF F0 R0 S3 D200`
+            },
+            clap: {
+                name: "Clap",
+                description: "Double-claw Fast-paced forward and backward slaps, simulating the action of clapping.",
+                code: `
+        LF F-40 R80 S4
+        LF F70 R80 S4
+        RF F-40 R80 S4
+        RF F70 R80 S4
+        LF F-40 R80 S4
+        LF F70 R80 S4
+        RF F-40 R80 S4
+        RF F70 R80 S4
+        LF F-40 R80 S4
+        LF F70 R80 S4
+        RF F-40 R80 S4
+        RF F70 R80 S4`
+            },
+            wag_tail_excited: {
+                name: "Tail Wag (Excited)",
+                description: "The tail swings rapidly from side to side, displaying excitement and vitality.",
+                code: `
+        TA F50 R50 S4
+        TA F-50 R50 S4
+        TA F50 R50 S4
+        TA F-50 R50 S4
+        TA F50 R50 S4
+        TA F-50 R50 S4
+        TA F0 R0 S3`
+            },
+            wag_tail_relaxed: {
+                name: "Tail Wag (Relaxed)",
+                description: "Tail slowly swings back and forth, like a cat stretching its legs after a nap.",
+                code: `
+        TA F30 R20 S2
+        TA F-30 R20 S2
+        TA F30 R20 S2
+        TA F-30 R20 S2
+        TA F0 R0 S3`
+            },
+            hind_leg_stretch: {
+                name: "Hind Leg Stretch",
+                description: "The hind legs stretch one by one backward, then reset, simulating a cat stretching action.",
+                code: `
+        RR F-40 R25 S2 D0
+        LR F-40 R25 S2 D0
+        RR F40 R0 S2 D250
+        LR F40 R0 S2 D250
+        RR F0 R0 S2 D250
+        LR F0 R0 S2 D250`
+            },
+            horizontal_tail_wag: {
+                name: "Horizontal Tail Wag",
+                description: "Tail swings back and forth horizontally, showing daily state.",
+                code: `
+        TA F30 R0 S3 D0
+        TA F-30 R0 S3 D0
+        TA F20 R0 S3 D0
+        TA F-20 R0 S3 D0
+        TA F0 R0 S2 D0`
+            },
+            tail_upward: {
+                name: "Tail Up",
+                description: "Tail stands up and goes up, showing attention, excitement or anticipation.",
+                code: `
+        TA F0 R60 S2 D0
+        TA F0 R15 S2 D200
+        TA F0 R0 S2 D150`
+            },
+            ears_perk_turn: {
+                name: "Ears Perk & Turn",
+                description: "The ears stand up and rotate quickly, like they are catching the environment sounds.",
+                code: `
+        RE F-20 R0 S3 D0
+        LE F20 R0 S3 D0
+        RE F0 R20 S3 D250
+        LE F0 R20 S3 D250
+        RE F-20 R0 S3 D0
+        LE F20 R0 S3 D0
+        RE F0 R0 S2 D200
+        LE F0 R0 S2 D200`
+            },
+            head_nod: {
+                name: "Head Nod",
+                description: "The head nods up and down quickly, like it is responding to 'mmm'",
+                code: `
+        HD F0 R-25 S4 D0
+        HD F0 R15 S4 D0
+        HD F0 R-25 S4 D200
+        HD F0 R15 S4 D200
+        HD F0 R0 S2 D0`
+            },
+            head_shake: {
+                name: "Head Shake",
+                description: "The head shakes left and right quickly, indicating rejection or Act Cute.",
+                code: `
+        HD F15 R0 S3 D0
+        HD F-15 R0 S3 D0
+        HD F15 R0 S3 D0
+        HD F-15 R0 S3 D0
+        HD F0 R0 S2 D0`
+            },
+            greet: {
+                name: "Greet",
+                description: "The paws lift and shake the tail, showing a friendly greet.",
+                code: `
+        RF F30 R15 S3 D0
+        TA F30 R20 S3 D0
+        RF F15 R5 S3 D120
+        TA F-30 R20 S3 D0
+        RF F30 R15 S3 D120
+        TA F30 R20 S3 D0
+        RF F0 R0 S2 D150
+        TA F0 R0 S2 D150`
+            },
+            stretch: {
+                name: "Stretch",
+                description: "The front paws stretch and the head presses down, like a cat stretching after waking up.",
+                code: `
+        RF F40 R0 S2 D0
+        LF F40 R0 S2 D0
+        HD F0 R-20 S2 D0
+        RF F-20 R0 S2 D0
+        LF F-20 R0 S2 D0
+        RF F0 R0 S3 D150
+        LF F0 R0 S3 D150
+        HD F0 R0 S3 D150`
+            },
+            act_cute: {
+                name: "Act Cute",
+                description: "The tail swings left and right, the head twists left and right, showing Act Cute.",
+                code: `
+        TA F30 R0 S4 D0
+        HD F25 R20 S3 D0
+        TA F-30 R0 S4 D0
+        HD F-25 R20 S3 D0
+        TA F20 R0 S4 D0
+        HD F0 R0 S2 D0
+        TA F0 R0 S2 D150`
+            }
+        };
+        
+        return presets[presetType] || null;
+    }
+    
+    // 加载Preset Commands代码
+    loadPresetCode(presetType) {
+        if (!presetType || presetType === 'custom') {
+            return; // Custom Edit模式，Do not load preset
+        }
+        
+        const preset = this.getPresetCode(presetType);
+        if (preset) {
+            const codeEditor = document.getElementById('codeEditor');
+            if (codeEditor) {
+                codeEditor.value = preset.code;
+                
+                // 显示提示信息
+                this.showPresetInfo(preset);
+                
+                // 自动Sync to Timeline
+                setTimeout(() => {
+                    this.syncCodeToTimeline();
+                }, 100);
+            }
+        }
+    }
+    
+    // 显示Preset Commands信息
+    showPresetInfo(preset) {
+        // 在Code Editor下方显示Preset info
+        const infoContainer = document.querySelector('.code-editor-info');
+        if (infoContainer) {
+            // 创建或更新Preset info显示
+            let presetInfo = infoContainer.querySelector('.preset-info');
+            if (!presetInfo) {
+                presetInfo = document.createElement('div');
+                presetInfo.className = 'preset-info';
+                presetInfo.style.cssText = 'margin-top: 10px; padding: 8px; background: rgba(34, 197, 94, 0.1); border-radius: 6px; border-left: 3px solid #22c55e;';
+                infoContainer.appendChild(presetInfo);
+            }
+            
+            presetInfo.innerHTML = `
+                <div style="font-size: 12px; color: #166534; font-weight: 500;">
+                    📚 <strong>${preset.name}</strong>
+                </div>
+                <div style="font-size: 11px; color: #374151; margin-top: 4px;">
+                    ${preset.description}
+                </div>
+            `;
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                if (presetInfo) {
+                    presetInfo.style.opacity = '0';
+                    presetInfo.style.transition = 'opacity 0.5s';
+                    setTimeout(() => {
+                        if (presetInfo.parentNode) {
+                            presetInfo.parentNode.removeChild(presetInfo);
+                        }
+                    }, 500);
+                }
+            }, 3000);
+        }
+    }
+
+    bindEvents() {
+        // Structure Selection
+        document.querySelectorAll('.structure-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // 确保获取到正确的Structure名称，即使点击的是子元素
+                const structure = e.target.dataset.structure || e.currentTarget.dataset.structure;
+                this.selectStructure(structure);
+            });
+        });
+
+        // Add Action
+        document.getElementById('addAction').addEventListener('click', () => {
+            this.addAction();
+        });
+
+        // 控制按钮
+        document.getElementById('playSequence').addEventListener('click', () => {
+            this.playSequence();
+        });
+        
+        // 初始化播放按钮提示
+        this.updatePlayButtonTooltip();
+
+        document.getElementById('pauseSequence').addEventListener('click', () => {
+            this.pauseSequence();
+        });
+
+        document.getElementById('stopSequence').addEventListener('click', () => {
+            this.stopSequence();
+        });
+
+        document.getElementById('resetAll').addEventListener('click', () => {
+            this.resetAll();
+        });
+
+        document.getElementById('clearSequence').addEventListener('click', () => {
+            this.clearSequence();
+        });
+
+        document.getElementById('exportCode').addEventListener('click', () => {
+            this.exportCode();
+        });
+
+        // Code Editor控制
+        document.getElementById('syncToTimeline').addEventListener('click', () => {
+            this.syncCodeToTimeline();
+        });
+
+        document.getElementById('formatCode').addEventListener('click', () => {
+            this.formatCode();
+        });
+
+        // 时间轴控制
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            this.zoomIn();
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            this.zoomOut();
+        });
+
+        document.getElementById('fitToView').addEventListener('click', () => {
+            this.fitToView();
+        });
+
+        // 模态框事件
+        document.querySelector('.close').addEventListener('click', () => {
+            this.closeModal();
+        });
+
+        document.getElementById('saveAction').addEventListener('click', () => {
+            this.saveAction();
+        });
+
+        document.getElementById('deleteAction').addEventListener('click', () => {
+            this.deleteAction();
+        });
+
+        document.getElementById('cancelEdit').addEventListener('click', () => {
+            this.closeModal();
+        });
+
+        // 自定义下拉菜单事件
+        const editStructureHeader = document.getElementById('editStructureHeader');
+        const editStructureOptions = document.getElementById('editStructureOptions');
+        const editStructureContainer = document.getElementById('editStructureContainer');
+
+        if (editStructureHeader) {
+            editStructureHeader.addEventListener('click', () => {
+                editStructureContainer.classList.toggle('open');
+                editStructureOptions.style.display = editStructureOptions.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        // 点击选项时更新选择
+        document.querySelectorAll('.custom-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const value = e.currentTarget.dataset.value;
+                const text = e.currentTarget.textContent.trim();
+                
+                // 更新隐藏的input值
+                document.getElementById('editStructure').value = value;
+                
+                // 更新显示的选项
+                const selectedOption = document.querySelector('.selected-option');
+                selectedOption.innerHTML = e.currentTarget.innerHTML;
+                
+                // 关闭下拉菜单
+                editStructureContainer.classList.remove('open');
+                editStructureOptions.style.display = 'none';
+                
+                // 更新模态框Medium的参数标签
+                this.updateModalParameterLabels(value);
+            });
+        });
+
+        // 点击外部关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!editStructureContainer.contains(e.target)) {
+                editStructureContainer.classList.remove('open');
+                editStructureOptions.style.display = 'none';
+            }
+        });
+
+        // 模态框Medium的Structure Selection
+        document.getElementById('editStructure').addEventListener('change', (e) => {
+            this.updateModalParameterLabels(e.target.value);
+        });
+
+        // WiFi连接按钮
+        this.addWiFiConnectionButton();
+
+        // 初始化一次输入Range（默认）
+        this.setAngleInputLimits('default');
+    }
+
+
+
+
+
+    // 发送命令到ESP32，然后转发给Arduino
+    async sendCommand(command) {
+        if (!this.isConnected) {
+            console.log('Not connected to ESP32, command:', command);
+            return false;
+        }
+        
+        try {
+            // 通过HTTP POST发送命令到ESP32
+            const response = await fetch('http://192.168.4.1/send', {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `command=${encodeURIComponent(command)}`
+            });
+            
+            if (response.ok) {
+                const result = await response.text();
+                console.log('✅ Sent command to ESP32:', command);
+                console.log('ESP32 response:', result);
+                
+                // 在代码输出Medium显示响应
+                const codeOutput = document.getElementById('codeOutput');
+                if (codeOutput) {
+                    const currentText = codeOutput.textContent;
+                    codeOutput.textContent = currentText + '\n// ESP32 response: ' + result.trim();
+                    codeOutput.scrollTop = codeOutput.scrollHeight;
+                }
+                
+                return true;
+            } else {
+                throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.error('Send command failed:', error);
+            this.updateConnectionStatus(false);
+            return false;
+        }
+    }
+
+    selectStructure(structure) {
+        console.log('Select Structure:', structure);
+        // 移除之前的选Medium状态
+        document.querySelectorAll('.structure-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 移除之前SVG部位的激活状态
+        document.querySelectorAll('.robot-part').forEach(part => {
+            part.classList.remove('active');
+        });
+
+        // 设置新的选Medium状态
+        const btn = document.querySelector(`[data-structure="${structure}"]`);
+        if (btn) {
+            btn.classList.add('active');
+            this.selectedStructure = structure;
+            console.log('Structure selected:', structure);
+            
+            // 根据选Medium的Structure更新参数名称
+            this.updateParameterLabels(structure);
+            
+            // 更新SVG部位颜色
+            this.updateRobotPartHighlight(structure);
+        } else {
+            console.error('Structure button not found:', structure);
+        }
+    }
+
+    // 根据选Medium的Structure更新参数名称
+    updateParameterLabels(structure) {
+        // 查找Forward Angle和Bend Angle的标签
+        const forwardLabel = document.querySelector('label[for="forwardAngle"]');
+        const bendLabel = document.querySelector('label[for="bendAngle"]');
+        
+        if (forwardLabel && bendLabel) {
+            if (!structure) {
+                // 默认状态
+                forwardLabel.innerHTML = 'Forward Angle (F)<span class="param-hint">Range：-90～90</span>';
+                bendLabel.innerHTML = 'Bend Angle (R)<span class="param-hint">Range：-90～90</span>';
+                // 同步默认输入限制
+                this.setAngleInputLimits('default');
+                return;
+            }
+            
+            const limits = this.getAngleLimits(structure);
+            switch(structure) {
+                case 'LE':
+                case 'RE':
+                    forwardLabel.innerHTML = `Rotation angle - F（CCW positive）<span class="param-hint">Range：${limits.Fmin}～${limits.Fmax}</span>`;
+                    bendLabel.innerHTML = `Pitch angle - R（Upward positive）<span class="param-hint">Range：${limits.Rmin}～${limits.Rmax}</span>`;
+                    break;
+                case 'HD':
+                    forwardLabel.innerHTML = `Rotation angle - F（CCW positive）<span class="param-hint">Range：${limits.Fmin}～${limits.Fmax}</span>`;
+                    bendLabel.innerHTML = `Pitch angle - R（Upward positive）<span class="param-hint">Range：${limits.Rmin}～${limits.Rmax}</span>`;
+                    break;
+                case 'LF':
+                case 'RF':
+                case 'LR':
+                case 'RR':
+                    forwardLabel.innerHTML = `Lift/drop - F（Lift positive）<span class="param-hint">Range：${limits.Fmin}～${limits.Fmax}</span>`;
+                    bendLabel.innerHTML = `Flexion Angle - R（Bending positive）<span class="param-hint">Range：${limits.Rmin}～${limits.Rmax}</span>`;
+                    break;
+                case 'TA':
+                    forwardLabel.innerHTML = `Rotation angle（CCW positive）<span class="param-hint">Range：${limits.Fmin}～${limits.Fmax}</span>`;
+                    bendLabel.innerHTML = `Flexion Angle（Upward positive）<span class="param-hint">Range：${limits.Rmin}～${limits.Rmax}</span>`;
+                    break;
+                default:
+                    forwardLabel.innerHTML = `Forward Angle (F)<span class="param-hint">Range：${limits.Fmin}～${limits.Fmax}</span>`;
+                    bendLabel.innerHTML = `Flexion Angle (R)<span class="param-hint">Range：${limits.Rmin}～${limits.Rmax}</span>`;
+                    break;
+            }
+
+            // 同步输入控件的限制Range
+            this.setAngleInputLimits(structure);
+        }
+    }
+
+    // 根据选Medium的Structure更新模态框Medium的参数名称
+    updateModalParameterLabels(structure) {
+        // 查找编辑模态框Medium的Forward Angle和Bend Angle的标签
+        const forwardLabel = document.querySelector('label[for="editForwardAngle"]');
+        const bendLabel = document.querySelector('label[for="editBendAngle"]');
+        
+        if (forwardLabel && bendLabel) {
+            if (!structure) {
+                // 默认状态
+                forwardLabel.innerHTML = 'Forward Angle (F)<span class="param-hint">Range：-90～90</span>';
+                bendLabel.innerHTML = 'Bend Angle (R)<span class="param-hint">Range：-90～90</span>';
+                this.setAngleInputLimits('default', true);
+                return;
+            }
+            
+            const limits = this.getAngleLimits(structure);
+            switch(structure) {
+                case 'LE':
+                case 'RE':
+                    forwardLabel.innerHTML = `Rotation angle - F（CCW positive）<span class=\"param-hint\">Range：${limits.Fmin}～${limits.Fmax}</span>`;
+                    bendLabel.innerHTML = `Pitch angle - R（Upward positive）<span class=\"param-hint\">Range：${limits.Rmin}～${limits.Rmax}</span>`;
+                    break;
+                case 'HD':
+                    forwardLabel.textContent = `Rotation angle - F（CCW positive，Range：${limits.Fmin}～${limits.Fmax}）`;
+                    bendLabel.textContent = `Pitch angle - R（Upward positive，Range：${limits.Rmin}～${limits.Rmax}）`;
+                    break;
+                case 'LF':
+                case 'RF':
+                case 'LR':
+                case 'RR':
+                    forwardLabel.textContent = `Lift/drop - F（Lift positive，Range：${limits.Fmin}～${limits.Fmax}）`;
+                    bendLabel.textContent = `Flexion Angle - R（Bending positive，Range：${limits.Rmin}～${limits.Rmax}）`;
+                    break;
+                case 'TA':
+                    forwardLabel.textContent = `Rotation angle（CCW positive，Range：${limits.Fmin}～${limits.Fmax}）`;
+                    bendLabel.textContent = `Flexion Angle（Upward positive，Range：${limits.Rmin}～${limits.Rmax}）`;
+                    break;
+                default:
+                    forwardLabel.textContent = `Forward Angle (F)（Range：${limits.Fmin}～${limits.Fmax}）`;
+                    bendLabel.textContent = `Bend Angle (R)（Range：${limits.Rmin}～${limits.Rmax}）`;
+                    break;
+            }
+
+            this.setAngleInputLimits(structure, true);
+        }
+    }
+
+    updateCustomSelectDisplay(structure) {
+        const selectedOption = document.querySelector('.selected-option');
+        const customOptions = document.querySelectorAll('.custom-option');
+        
+        // 找到对应的选项
+        const targetOption = Array.from(customOptions).find(option => 
+            option.dataset.value === structure
+        );
+        
+        if (targetOption && selectedOption) {
+            selectedOption.innerHTML = targetOption.innerHTML;
+        }
+    }
+
+    // 获取不同Structure的角度限制
+    getAngleLimits(structure) {
+        // 默认Range
+        const defaultLimits = { Fmin: -90, Fmax: 90, Rmin: -90, Rmax: 90 };
+        if (!structure || structure === 'default') return defaultLimits;
+
+        // Head：F/R 都在 -40～40
+        if (structure === 'HD') {
+            return { Fmin: -40, Fmax: 40, Rmin: -40, Rmax: 40 };
+        }
+
+        // 左Right Ear：F/R 都在 -40～40
+        if (['LE', 'RE'].includes(structure)) {
+            return { Fmin: -40, Fmax: 40, Rmin: -40, Rmax: 40 };
+        }
+
+        // 前后脚：R 在 0～90，F 在 -90～90
+        if (['LF', 'RF', 'LR', 'RR'].includes(structure)) {
+            return { Fmin: -90, Fmax: 90, Rmin: 0, Rmax: 90 };
+        }
+
+        // 其它（Tail）：-90～90
+        return defaultLimits;
+    }
+
+    // 给输入框设置角度限制（isModal 为 true 时设置模态框内输入）
+    setAngleInputLimits(structure, isModal = false) {
+        const limits = this.getAngleLimits(structure);
+        const fInput = document.getElementById(isModal ? 'editForwardAngle' : 'forwardAngle');
+        const rInput = document.getElementById(isModal ? 'editBendAngle' : 'bendAngle');
+        if (fInput && rInput) {
+            fInput.min = String(limits.Fmin);
+            fInput.max = String(limits.Fmax);
+            rInput.min = String(limits.Rmin);
+            rInput.max = String(limits.Rmax);
+            // 占位提示
+            fInput.placeholder = `Allowed range：${limits.Fmin}～${limits.Fmax}`;
+            rInput.placeholder = `Allowed range：${limits.Rmin}～${limits.Rmax}`;
+        }
+    }
+
+    clampValue(value, min, max) {
+        if (isNaN(value)) return min;
+        return Math.min(max, Math.max(min, value));
+    }
+
+    clampAnglesForStructure(structure, forwardAngle, bendAngle) {
+        const limits = this.getAngleLimits(structure);
+        const fa = this.clampValue(forwardAngle, limits.Fmin, limits.Fmax);
+        const ra = this.clampValue(bendAngle, limits.Rmin, limits.Rmax);
+        return { forwardAngle: fa, bendAngle: ra };
+    }
+
+    addAction() {
+        if (!this.selectedStructure) {
+            alert('Please select Structure');
+            return;
+        }
+
+        let forwardAngle = parseInt(document.getElementById('forwardAngle').value);
+        let bendAngle = parseInt(document.getElementById('bendAngle').value);
+        // 角度夹取到合法Range
+        const clamped = this.clampAnglesForStructure(this.selectedStructure, forwardAngle, bendAngle);
+        forwardAngle = clamped.forwardAngle;
+        bendAngle = clamped.bendAngle;
+        const speed = parseInt(document.getElementById('speedLevel').value);
+        const delayTime = parseInt(document.getElementById('delayTime').value);
+
+        // 获取上一个动作（同一Structure）
+        const previousAction = this.getPreviousActionForStructure(this.selectedStructure);
+        
+        const action = {
+            id: Date.now() + Math.random(), // 生成唯一ID
+            structure: this.selectedStructure,
+            forwardAngle: forwardAngle,
+            bendAngle: bendAngle,
+            speed: speed,
+            delayTime: delayTime,
+            startTime: this.calculateStartTime(),
+            duration: this.calculateDuration(forwardAngle, bendAngle, speed, previousAction),
+            sent: false, // 添加发送状态标记
+            // 为可视化编辑器添加的动作设置Time Control命令
+            originalTimeControl: delayTime > 0 ? `D${delayTime}` : null
+        };
+
+        this.actions.push(action);
+        this.updateTimeline();
+        this.updateStatus();
+        this.updateCodeOutput();
+
+        console.log(`✅ Add Action: ${action.structure} F${forwardAngle} R${bendAngle} S${speed}`);
+    }
+
+    calculateStartTime() {
+
+
+        const currentStructure = this.selectedStructure;
+        const delayTime = parseInt(document.getElementById('delayTime').value);
+        
+        // 找到同一Structure的最后一个动作
+        const sameStructureActions = this.actions.filter(action => action.structure === currentStructure);
+        
+        if (sameStructureActions.length === 0) {
+            // 这是这个Structure的第一个动作，开始时间 = Pre-execution Delay时间
+            return delayTime;
+        }
+        
+        // 找到同一Structure的最后一个动作
+        const lastSameStructureAction = sameStructureActions[sameStructureActions.length - 1];
+        
+        // 计算该动作在队列Medium的实际开始执行时间
+        // 开始时间 = 前序动作的执行时间之和 + 前序动作的延迟时间之和 + 当前动作的Pre-execution Delay时间
+        return lastSameStructureAction.startTime + lastSameStructureAction.duration + lastSameStructureAction.delayTime + delayTime;
+    }
+
+    calculateDuration(forwardAngle, bendAngle, speed, previousAction = null) {
+        const speedLevels = {1: 20, 2: 15, 3: 10, 4: 5, 5: 2};
+        const baseDuration = speedLevels[speed] || 15;
+        
+        // 根据角度差计算步数，每步的延迟时间
+        let maxAngleDiff = Math.max(Math.abs(forwardAngle), Math.abs(bendAngle));
+        
+        if (previousAction) {
+            // 如果有上一个动作，计算角度差
+            const forwardAngleDiff = Math.abs(forwardAngle - previousAction.forwardAngle);
+            const bendAngleDiff = Math.abs(bendAngle - previousAction.bendAngle);
+            maxAngleDiff = Math.max(forwardAngleDiff, bendAngleDiff);
+        }
+        
+        const steps = Math.max(maxAngleDiff, 1);
+        
+        return steps * baseDuration;
+    }
+
+    createTimeline() {
+        this.createTimelineMarkers();
+        this.createTimelineTracks();
+    }
+
+    createTimelineMarkers() {
+        const markersContainer = document.getElementById('timelineMarkers');
+        markersContainer.innerHTML = '';
+
+        // 计算总时长：考虑所有动作的开始时间、持续时间和延迟时间
+        let maxTime = 5000; // 默认最小时间
+        if (this.actions.length > 0) {
+            maxTime = Math.max(...this.actions.map(a => {
+                // 动作结束时间 = 开始时间 + 持续时间
+                const actionEndTime = a.startTime + a.duration;
+                return actionEndTime;
+            }));
+        }
+        
+        const markerCount = Math.ceil(maxTime / 1000);
+
+        for (let i = 0; i <= markerCount; i++) {
+            const marker = document.createElement('div');
+            marker.className = 'timeline-marker';
+            marker.textContent = `${i}s`;
+            markersContainer.appendChild(marker);
+        }
+    }
+
+    createTimelineTracks() {
+        const tracksContainer = document.getElementById('timelineTracks');
+        if (!tracksContainer) {
+            console.error('Unable to locate the timeline track container');
+            return;
+        }
+        tracksContainer.innerHTML = '';
+
+        const structures = ['LE', 'RE', 'HD', 'LF', 'RF', 'LR', 'RR', 'TA'];
+        const structureNames = {
+            'LE': 'Left Ear', 'RE': 'Right Ear', 'HD': 'Head', 'LF': 'Left Front Leg',
+            'RF': 'Right Front Leg', 'LR': 'Left Hind Leg', 'RR': 'Right Hind Leg', 'TA': 'Tail'
+        };
+
+        structures.forEach(structure => {
+            const track = document.createElement('div');
+            track.className = 'timeline-track';
+            track.innerHTML = `
+                <div class="track-label">${structureNames[structure]}</div>
+                <div class="track-content" data-structure="${structure}"></div>
+            `;
+            tracksContainer.appendChild(track);
+            console.log(`Create track: ${structure} - ${structureNames[structure]}`);
+        });
+        
+        // 验证轨道创建
+        setTimeout(() => {
+            console.log('Track creation verification:');
+            structures.forEach(structure => {
+                const trackContent = document.querySelector(`.timeline-tracks [data-structure="${structure}"]`);
+                if (trackContent) {
+                    console.log(`✓ ${structure}: Track container exists, width=${trackContent.offsetWidth}px`);
+                } else {
+                    console.error(`✗ ${structure}: Track container does not exist`);
+                }
+            });
+        }, 100);
+    }
+
+    // 更新时间轴
+    updateTimeline() {
+        this.updateActionBlocks();
+        this.createTimelineMarkers();
+    }
+
+    // 更新动作块
+    updateActionBlocks() {
+        // 清除现有的动作块
+        document.querySelectorAll('.action-block').forEach(block => {
+            block.remove();
+        });
+        
+        // 重新渲染所有动作块
+        this.renderActionBlocks();
+    }
+
+    // 渲染动作块
+    renderActionBlocks() {
+        // 清除现有的动作块
+        document.querySelectorAll('.action-block').forEach(block => {
+            block.remove();
+        });
+        
+        // 为每个动作创建块
+        this.actions.forEach(action => {
+            const block = this.createActionBlock(action);
+            
+            // 找到对应的轨道容器
+            const trackContent = document.querySelector(`.timeline-tracks [data-structure="${action.structure}"]`);
+            if (trackContent) {
+                trackContent.appendChild(block);
+            } else {
+                console.error(`Unable to locate the track container for Structure ${action.structure}`);
+            }
+        });
+    }
+
+    // 创建动作块
+    createActionBlock(action) {
+        const block = document.createElement('div');
+        block.className = `action-block ${action.structure.toLowerCase()}`;
+        block.dataset.actionId = action.id; // 添加唯一ID
+        
+        const startTime = this.formatTime(action.startTime);
+        const duration = this.formatTime(action.duration);
+        const delayTime = this.formatTime(action.delayTime);
+        
+        block.innerHTML = `
+            <div class="drag-handle">⋮⋮</div>
+            <div class="action-info">
+                <div class="action-title">${action.structure} F${action.forwardAngle} R${action.bendAngle}</div>
+                <div class="action-time">
+                    <div class="start-time">Start: ${startTime}</div>
+                    <div class="duration-time">Execute: ${duration}</div>
+                    <div class="delay-time">延迟: ${delayTime}</div>
+                </div>
+            </div>
+            <div class="resize-handle"></div>
+        `;
+        
+        // 设置位置和大小
+        this.updateActionBlockPosition(block, action);
+        
+        // 使动作块可拖拽和调整大小
+        this.makeDraggable(block, action);
+        // this.makeResizable(block, action);
+        
+        // 添加点击事件用于编辑
+        block.addEventListener('dblclick', () => {
+            this.editAction(action);
+        });
+        
+        return block;
+    }
+
+    // 更新动作块的位置和大小
+    updateActionBlockPosition(block, action) {
+        // 计算位置和大小
+        const left = (action.startTime / 1000) * this.timelineScale * this.zoomLevel;
+        const width = (action.duration / 1000) * this.timelineScale * this.zoomLevel;
+        
+        // 设置位置和大小
+        block.style.left = `${left}px`;
+        block.style.width = `${Math.max(width, 10)}px`; // 最小宽度10px
+        
+        console.log(`📍 Update action block ${action.structure}: Start time=${action.startTime}ms, Duration=${action.duration}ms, Position=${left}px, Width=${width}px`);
+    }
+
+    // 更新所有动作块的位置和大小
+    updateAllActionBlockPositions() {
+        this.actions.forEach(action => {
+            const block = document.querySelector(`[data-action-id="${action.id}"]`);
+            if (block) {
+                this.updateActionBlockPosition(block, action);
+            }
+        });
+    }
+
+    makeDraggable(block, action) {
+        let isDragging = false;
+        let startX, startLeft;
+
+        const dragHandle = block.querySelector('.drag-handle');
+        dragHandle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startLeft = parseFloat(block.style.left) || 0;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - startX;
+            let newLeft = startLeft + deltaX;
+
+            // 获取同一Structure内的动作数组，按时间排序
+            const sameStructureActions = this.actions
+                .filter(a => a.structure === action.structure)
+                .sort((a, b) => a.startTime - b.startTime);
+            
+            const currentIndex = sameStructureActions.findIndex(a => a.id === action.id);
+            
+            // 计算拖动边界限制（只考虑同一Structure内的相邻动作块）
+            let minLeft = 0; // 最小左边界
+            let maxLeft = Infinity; // 最大左边界
+            
+            if (currentIndex > 0) {
+                // 同一Structure内前一个动作的结束时间作为最小边界
+                const prevAction = sameStructureActions[currentIndex - 1];
+                const prevEndTime = prevAction.startTime + prevAction.duration;
+                minLeft = (prevEndTime / 1000) * this.timelineScale * this.zoomLevel;
+                console.log(`📍 Previous action boundary in the same Structure: ${prevAction.structure} End time=${prevEndTime}ms, Minimum left boundary=${minLeft}px`);
+            }
+            
+            if (currentIndex < sameStructureActions.length - 1) {
+                // 同一Structure内下一个动作的开始时间作为最大边界
+                const nextAction = sameStructureActions[currentIndex + 1];
+                const nextStartTime = nextAction.startTime;
+                // 当前动作的宽度
+                const currentWidth = (action.duration / 1000) * this.timelineScale * this.zoomLevel;
+                maxLeft = (nextStartTime / 1000) * this.timelineScale * this.zoomLevel - currentWidth;
+                console.log(`📍 Next action boundary in the same Structure: ${nextAction.structure} Start time=${nextStartTime}ms, Maximum left boundary=${maxLeft}px`);
+            }
+            
+            // 特殊处理：同一Structure内第一个动作块可以拖到时间线开始（0位置）
+            if (currentIndex === 0) {
+                minLeft = 0;
+                console.log(`📍 First action block in the same Structure: Minimum left boundary set to 0px`);
+            }
+            
+            // 特殊处理：同一Structure内最后一个动作块可以拖到时间线末尾
+            if (currentIndex === sameStructureActions.length - 1) {
+                maxLeft = Infinity;
+                console.log(`📍 Last action block in the same Structure: No right boundary restriction`);
+            }
+            
+            // 检查是否达到边界限制
+            const isAtMinBoundary = newLeft <= minLeft;
+            const isAtMaxBoundary = newLeft >= maxLeft;
+            
+            // 应用边界限制
+            newLeft = Math.max(minLeft, Math.min(maxLeft, newLeft));
+            
+            // 添加视觉反馈：当达到边界时改变样式
+            if (isAtMinBoundary || isAtMaxBoundary) {
+                block.style.opacity = '0.7';
+                block.style.border = '2px solid #ff6b6b';
+                
+                // 添加控制台日志，显示边界限制信息
+                if (isAtMinBoundary) {
+                    console.log(`🚫 Drag limited: Reached the end time boundary of the previous action (${minLeft}px)`);
+                } else if (isAtMaxBoundary) {
+                    console.log(`🚫 Drag limited: Reached the start time boundary of the next action (${maxLeft}px)`);
+                }
+            } else {
+                block.style.opacity = '1';
+                block.style.border = '2px solid transparent';
+            }
+            
+            // 更新位置
+            block.style.left = `${newLeft}px`;
+
+            // 更新时间
+            const newStartTime = Math.round((newLeft / (this.timelineScale * this.zoomLevel)) * 1000);
+            action.startTime = newStartTime;
+            
+            // 更新时间显示
+            this.updateActionTimeDisplay(block, action);
+            
+            this.updateCodeOutput();
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                // 拖拽结束后，更新所有动作块的延迟时间
+                this.updateAllActionDelays();
+                
+                // 重新渲染时间线，更新所有动作块的位置和大小
+                this.updateAllActionBlockPositions();
+                this.updateTimeline();
+                
+                // 清除原始Time Control命令，确保使用新计算的延迟时间
+                this.actions.forEach(action => {
+                    if (action.originalTimeControl) {
+                        delete action.originalTimeControl;
+                    }
+                });
+                
+                // 同步更新Code Editor和代码预览
+                this.updateCodeOutput();
+                
+                console.log('✅ Drag completed, code has been synchronized updated');
+            }
+            
+            // 重置样式
+            block.style.opacity = '1';
+            block.style.border = '2px solid transparent';
+            
+            isDragging = false;
+        });
+    }
+
+    // makeResizable(block, action) {
+    //     let isResizing = false;
+    //     let startX, startWidth;
+
+    //     const resizeHandle = block.querySelector('.resize-handle');
+    //     resizeHandle.addEventListener('mousedown', (e) => {
+    //         isResizing = true;
+    //         startX = e.clientX;
+    //         startWidth = parseFloat(block.style.width) || 60;
+    //         e.preventDefault();
+    //     });
+
+    //     document.addEventListener('mousemove', (e) => {
+    //         if (!isResizing) return;
+
+    //         const deltaX = e.clientX - startX;
+    //         const newWidth = Math.max(60, startWidth + deltaX);
+    //         block.style.width = `${newWidth}px`;
+
+    //         // 更新持续时间
+    //         const newDuration = (newWidth / (this.timelineScale * this.zoomLevel)) * 1000;
+    //         action.duration = newDuration;
+            
+    //         // 更新时间显示
+    //         this.updateActionTimeDisplay(block, action);
+            
+    //         this.updateCodeOutput();
+    //     });
+
+    //     document.addEventListener('mouseup', () => {
+    //         if (isResizing) {
+    //             // 调整大小结束后，重新计算持续时间并对齐到Speed Level
+    //             this.recalculateDurationAndSpeed(action);
+                
+    //             // 更新下一个动作块的延迟时间
+    //             this.updateNextActionDelay(action);
+                
+    //             // 更新所有动作块的延迟时间
+    //             this.updateAllActionDelays();
+                
+    //             // 重新渲染时间线
+    //             this.updateTimeline();
+    //             this.updateCodeOutput();
+    //         }
+    //         isResizing = false;
+    //     });
+    // }
+
+    // // 重新计算持续时间并对齐到Speed Level
+    // recalculateDurationAndSpeed(action) {
+    //     // 获取上一个动作块的角度（如果没有则用0）
+    //     const previousAction = this.getPreviousAction(action);
+    //     const prevForwardAngle = previousAction ? previousAction.forwardAngle : 0;
+    //     const prevBendAngle = previousAction ? previousAction.bendAngle : 0;
+        
+    //     // 计算角度差
+    //     const forwardAngleDiff = Math.abs(action.forwardAngle - prevForwardAngle);
+    //     const bendAngleDiff = Math.abs(action.bendAngle - prevBendAngle);
+    //     const maxAngleDiff = Math.max(forwardAngleDiff, bendAngleDiff);
+        
+    //     // 计算步数（至少1步）
+    //     const steps = Math.max(maxAngleDiff, 1);
+        
+    //     // Speed Level定义
+    //     const speedLevels = {1: 20, 2: 15, 3: 10, 4: 5, 5: 2};
+        
+    //     // 计算当前持续时间对应的Speed Level
+    //     const bestSpeedlevel = Math.ceil(action.duration / steps);
+    //     // 找到speedLevelsMedium大于等于bestSpeedlevel的最小值
+    //     const bestSpeed = Object.keys(speedLevels).find(key => speedLevels[key] >= bestSpeedlevel);
+    //     const bestDuration = steps * speedLevels[bestSpeed];
+
+        
+    //     // 更新动作的Speed Level和持续时间
+    //     action.speed = bestSpeed;
+    //     action.duration = bestDuration;
+        
+    //     // 更新动作块显示
+    //     this.updateActionTimeDisplay(document.querySelector(`[data-action-id="${action.id}"]`), action);
+        
+    //     console.log(`🔄 重新计算动作 ${action.structure}: 步数=${steps}, Speed Level=${bestSpeed}, 持续时间=${bestDuration}ms`);
+    // }
+
+    // 获取上一个动作块
+    getPreviousAction(currentAction) {
+        const sameStructureActions = this.actions
+            .filter(action => action.structure === currentAction.structure)
+            .sort((a, b) => a.startTime - b.startTime);
+        
+        const currentIndex = sameStructureActions.findIndex(action => action.id === currentAction.id);
+        if (currentIndex > 0) {
+            return sameStructureActions[currentIndex - 1];
+        }
+        return null;
+    }
+
+    // 更新下一个动作块的延迟时间
+    updateNextActionDelay(currentAction) {
+        const nextAction = this.getNextAction(currentAction);
+        if (nextAction) {
+            // 下一个动作的延迟时间 = 该动作的开始时间 - 上一个动作的结束时间
+            const previousEndTime = currentAction.startTime + currentAction.duration;
+            nextAction.delayTime = Math.max(0, nextAction.startTime - previousEndTime);
+            
+            console.log(`⏱️ Update the delay time of the next action ${nextAction.structure}: ${nextAction.delayTime}ms`);
+        }
+    }
+
+    // 获取下一个动作块
+    getNextAction(currentAction) {
+        const sameStructureActions = this.actions
+            .filter(action => action.structure === currentAction.structure)
+            .sort((a, b) => a.startTime - b.startTime);
+        
+        const currentIndex = sameStructureActions.findIndex(action => action.id === currentAction.id);
+        if (currentIndex >= 0 && currentIndex < sameStructureActions.length - 1) {
+            return sameStructureActions[currentIndex + 1];
+        }
+        return null;
+    }
+
+    // 更新所有动作块的延迟时间
+    updateAllActionDelays() {
+        // 按Structure分组并排序
+        const structureGroups = {};
+        this.actions.forEach(action => {
+            if (!structureGroups[action.structure]) {
+                structureGroups[action.structure] = [];
+            }
+            structureGroups[action.structure].push(action);
+        });
+        
+        // 为每个Structure更新延迟时间
+        Object.keys(structureGroups).forEach(structure => {
+            const actions = structureGroups[structure].sort((a, b) => a.startTime - b.startTime);
+            
+            for (let i = 0; i < actions.length; i++) {
+                if (i === 0) {
+                    // 第一个动作的延迟时间就是开始时间
+                    actions[i].delayTime = actions[i].startTime;
+                    continue;
+                }
+                
+                const currentAction = actions[i];
+                const previousAction = actions[i - 1];
+                
+                // 计算延迟时间：当前动作开始时间 - 上一个动作的结束时间
+                const previousEndTime = previousAction.startTime + previousAction.duration;
+                currentAction.delayTime = Math.max(0, currentAction.startTime - previousEndTime);
+            }
+        });
+    }
+
+    // 获取指定Structure的最后一个动作
+    getPreviousActionForStructure(structure) {
+        const sameStructureActions = this.actions
+            .filter(action => action.structure === structure)
+            .sort((a, b) => a.startTime - b.startTime);
+        
+        if (sameStructureActions.length > 0) {
+            return sameStructureActions[sameStructureActions.length - 1];
+        }
+        return null;
+    }
+
+    // 从动作列表Medium获取指定Structure的最后一个动作（用于解析过程Medium）
+    getPreviousActionForStructureFromList(structure, actionsList, currentIndex) {
+        const sameStructureActions = actionsList
+            .slice(0, currentIndex) // 只考虑当前动作之前的动作
+            .filter(action => action.structure === structure)
+            .sort((a, b) => a.startTime - b.startTime);
+        
+        if (sameStructureActions.length > 0) {
+            return sameStructureActions[sameStructureActions.length - 1];
+        }
+        return null;
+    }
+
+    editAction(action) {
+        this.editingAction = action;
+        
+        // 填充编辑表单
+        document.getElementById('editStructure').value = action.structure;
+        document.getElementById('editForwardAngle').value = action.forwardAngle;
+        document.getElementById('editBendAngle').value = action.bendAngle;
+        document.getElementById('editSpeedLevel').value = action.speed;
+        document.getElementById('editDelayTime').value = action.delayTime;
+
+        // 更新自定义下拉菜单的显示
+        this.updateCustomSelectDisplay(action.structure);
+
+        // 更新模态框Medium的参数标签
+        this.updateModalParameterLabels(action.structure);
+
+        // 添加实时更新持续时间的监听器
+        this.addEditFormListeners();
+
+        // 显示模态框
+        document.getElementById('actionModal').style.display = 'block';
+    }
+
+    // 添加编辑表单的实时更新监听器
+    addEditFormListeners() {
+        const forwardAngleInput = document.getElementById('editForwardAngle');
+        const bendAngleInput = document.getElementById('editBendAngle');
+        const speedLevelSelect = document.getElementById('editSpeedLevel');
+        
+        // 移除之前的监听器（避免重复）
+        forwardAngleInput.removeEventListener('input', this.updateDurationPreview);
+        bendAngleInput.removeEventListener('input', this.updateDurationPreview);
+        speedLevelSelect.removeEventListener('change', this.updateDurationPreview);
+        
+        // 添加新的监听器
+        this.updateDurationPreview = () => {
+            if (!this.editingAction) return;
+            
+            const forwardAngle = parseInt(forwardAngleInput.value) || 0;
+            const bendAngle = parseInt(bendAngleInput.value) || 0;
+            const speed = parseInt(speedLevelSelect.value) || 2;
+            
+            // 获取上一个动作
+            const previousAction = this.getPreviousAction(this.editingAction);
+            
+            // 计算新的持续时间
+            const newDuration = this.calculateDuration(forwardAngle, bendAngle, speed, previousAction);
+            
+            // 更新预览显示
+            this.updateDurationPreviewDisplay(newDuration);
+        };
+        
+        // 绑定监听器
+        forwardAngleInput.addEventListener('input', this.updateDurationPreview);
+        bendAngleInput.addEventListener('input', this.updateDurationPreview);
+        speedLevelSelect.addEventListener('change', this.updateDurationPreview);
+        
+        // 立即更新一次预览
+        this.updateDurationPreview();
+    }
+
+    // 更新持续时间预览显示
+    updateDurationPreviewDisplay(duration) {
+        // 查找或创建预览显示元素
+        let previewElement = document.getElementById('durationPreview');
+        if (!previewElement) {
+            previewElement = document.createElement('div');
+            previewElement.id = 'durationPreview';
+            previewElement.className = 'duration-preview';
+            previewElement.style.cssText = 'margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px; color: #666;';
+            
+            // 插入到编辑表单的底部
+            const editForm = document.querySelector('#actionModal .modal-content');
+            editForm.appendChild(previewElement);
+        }
+        
+        previewElement.innerHTML = `⏱️ Expected execution time: ${this.formatTime(duration)}`;
+    }
+
+    saveAction() {
+        if (!this.editingAction) return;
+
+        // 更新动作数据（并限制Range）
+        this.editingAction.structure = document.getElementById('editStructure').value;
+        const editedF = parseInt(document.getElementById('editForwardAngle').value);
+        const editedR = parseInt(document.getElementById('editBendAngle').value);
+        const clamped = this.clampAnglesForStructure(this.editingAction.structure, editedF, editedR);
+        this.editingAction.forwardAngle = clamped.forwardAngle;
+        this.editingAction.bendAngle = clamped.bendAngle;
+        this.editingAction.speed = parseInt(document.getElementById('editSpeedLevel').value);
+        this.editingAction.delayTime = parseInt(document.getElementById('editDelayTime').value);
+
+        // 重新计算持续时间
+        const previousAction = this.getPreviousAction(this.editingAction);
+        this.editingAction.duration = this.calculateDuration(
+            this.editingAction.forwardAngle, 
+            this.editingAction.bendAngle, 
+            this.editingAction.speed, 
+            previousAction
+        );
+
+        // 更新原始Time Control命令
+                    this.editingAction.originalTimeControl = this.editingAction.delayTime > 0 ? `D${this.editingAction.delayTime}` : null;
+
+        // 更新所有动作块的延迟时间
+        this.updateAllActionDelays();
+
+        this.closeModal();
+        this.updateActionBlocks();
+        this.updateAllActionBlockPositions(); // 更新所有动作块的位置和大小
+        this.updateTimeline();
+        this.updateCodeOutput();
+        
+        console.log(`💾 Save action ${this.editingAction.structure}: Recalculated duration=${this.editingAction.duration}ms`);
+    }
+
+    deleteAction() {
+        if (!this.editingAction) return;
+
+        const index = this.actions.findIndex(a => a.id === this.editingAction.id);
+        if (index > -1) {
+            this.actions.splice(index, 1);
+        }
+
+        this.closeModal();
+        this.updateActionBlocks();
+        this.updateStatus();
+        this.updateCodeOutput();
+    }
+
+    closeModal() {
+        document.getElementById('actionModal').style.display = 'none';
+        this.editingAction = null;
+    }
+
+    // Play Sequence
+    playSequence() {
+        if (this.actions.length === 0) {
+            alert('Please add Action');
+            return;
+        }
+
+        this.isPlaying = true;
+        this.currentTime = 0;
+        
+        // Clear之前的播放
+        if (this.playbackInterval) {
+            clearInterval(this.playbackInterval);
+        }
+
+        // 生成完整的批量指令序列
+        const batchCommands = this.generateBatchCommands();
+        console.log('🔄 Generate batch commands sequence:', batchCommands);
+        
+        // 检查连接状态
+        if (!this.isConnected) {
+            console.log('⚠️ Not connected to ESP32, only play animation preview');
+            // 即使未连接也播放动画（仅用于视觉预览）
+            this.startPlaybackAnimation();
+            
+            // 在代码输出Medium显示提示
+            const codeOutput = document.getElementById('codeOutput');
+            if (codeOutput) {
+                const currentText = codeOutput.textContent;
+                codeOutput.textContent = currentText + '\n// ⚠️ Not connected to ESP32, only display animation preview\n// 📡 Please connect ESP32 to execute actual action';
+                codeOutput.scrollTop = codeOutput.scrollHeight;
+            }
+            return;
+        }
+        
+        // 已连接状态：发送指令到ESP32
+        this.sendBatchCommands(batchCommands).then(success => {
+            if (success) {
+                console.log('✅ Batch commands sent，Start playing animation');
+                // Start playing animation（仅用于视觉反馈，实际执行已在Arduino端）
+                this.startPlaybackAnimation();
+            } else {
+                console.error('❌ Batch commands sending failed');
+                this.isPlaying = false;
+            }
+        });
+    }
+
+    // 生成批量指令序列
+    generateBatchCommands() {
+        // 按时间顺序排序动作
+        const sortedActions = [...this.actions].sort((a, b) => a.startTime - b.startTime);
+        
+        // 生成所有指令，用分号分隔（用于批量发送）
+        const commands = sortedActions.map(action => {
+            let command = `${action.structure} F${action.forwardAngle} R${action.bendAngle} S${action.speed}`;
+            
+            if (action.delayTime > 0) {
+                command += ` D${action.delayTime}`;
+            }
+            
+            return command;
+        });
+        
+        return commands.join(';');
+    }
+
+    // Sending batch commands to ESP32
+    async sendBatchCommands(commands) {
+        if (!this.isConnected) {
+            console.log('⚠️ Not connected to ESP32; cannot send batch commands');
+            console.log('📋 Generated command sequence:', commands);
+            return false;
+        }
+        
+        try {
+            console.log('📤 Sending batch commands to ESP32...');
+            
+            // 通过HTTP POSTSending batch commands to ESP32
+            const response = await fetch('http://192.168.4.1/batch', {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `commands=${encodeURIComponent(commands)}`
+            });
+            
+            if (response.ok) {
+                const result = await response.text();
+                console.log('✅ Batch commands sent');
+                console.log('ESP32 response:', result);
+                
+                // 在代码输出Medium显示响应
+                const codeOutput = document.getElementById('codeOutput');
+                if (codeOutput) {
+                    const currentText = codeOutput.textContent;
+                    codeOutput.textContent = currentText + '\n// 🚀 Batch commands sent; all actions will run in parallel\n// ESP32 response: ' + result.trim();
+                    codeOutput.scrollTop = codeOutput.scrollHeight;
+                }
+                
+                return true;
+            } else {
+                throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.error('Send batch commands failed:', error);
+            this.updateConnectionStatus(false);
+            return false;
+        }
+    }
+
+    // Start playing animation（仅用于视觉反馈）
+    startPlaybackAnimation() {
+        console.log('🎬 Start playing animation, total duration:', this.getTotalDuration(), 'ms');
+        console.log('📊 Current action number:', this.actions.length);
+        
+        this.playbackInterval = setInterval(() => {
+            this.currentTime += 100; // 100ms步进
+            
+            // 高亮当前执行的动作（仅用于视觉反馈）
+            this.highlightCurrentActions();
+            
+            // 调试信息
+            if (this.currentTime % 1000 === 0) {
+                console.log('⏱️ Playback progress:', this.currentTime, 'ms /', this.getTotalDuration(), 'ms');
+            }
+            
+            // 检查是否播放完成
+            if (this.currentTime >= this.getTotalDuration()) {
+                console.log('✅ Animation playback completed');
+                this.stopSequence();
+                
+                // 显示并行执行完成信息
+                this.showParallelExecutionComplete();
+            }
+        }, 100);
+    }
+
+    // 显示并行执行完成信息
+    showParallelExecutionComplete() {
+        const codeOutput = document.getElementById('codeOutput');
+        if (codeOutput) {
+            const currentText = codeOutput.textContent;
+            const completionInfo = '\n// 🎉 Action sequence playback completed!\n// 💡 All actions have been executed in parallel on the Arduino\n// 🚀 Different机构的动作真正同时进行，无需等待';
+            codeOutput.textContent = currentText + completionInfo;
+            codeOutput.scrollTop = codeOutput.scrollHeight;
+        }
+        
+        // 显示完成提示
+        console.log('🎉 Action sequence playback completed! All actions have been executed in parallel on the Arduino');
+        
+        // 可以添加一个视觉提示
+        this.showCompletionNotification();
+    }
+
+    // 显示完成通知
+    showCompletionNotification() {
+        // 创建一个简单的完成通知
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+        `;
+        notification.innerHTML = '🎉 Action sequence execution completed!<br><small>All actions have been executed in parallel</small>';
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // 3秒后自动移除
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.5s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 500);
+        }, 3000);
+        
+        // 添加滑出动画
+        const slideOutStyle = document.createElement('style');
+        slideOutStyle.textContent = `
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(slideOutStyle);
+    }
+
+
+
+    // Pause序列
+    pauseSequence() {
+        this.isPlaying = false;
+        if (this.playbackInterval) {
+            clearInterval(this.playbackInterval);
+            this.playbackInterval = null;
+        }
+        this.clearHighlights();
+    }
+
+    // Stop序列
+    stopSequence() {
+        this.isPlaying = false;
+        this.currentTime = 0;
+        if (this.playbackInterval) {
+            clearInterval(this.playbackInterval);
+            this.playbackInterval = null;
+        }
+        this.clearHighlights();
+        
+        // 重置所有动作的发送状态
+        this.actions.forEach(action => {
+            action.sent = false;
+        });
+    }
+
+    // 高亮当前执行的动作
+    highlightCurrentActions() {
+        // 清除之前的高亮
+        this.clearHighlights();
+        
+        // 找到当前时间正在执行的动作
+        const currentActions = this.actions.filter(action => 
+            action.startTime <= this.currentTime && 
+            action.startTime + action.duration >= this.currentTime
+        );
+        
+        // 高亮当前执行的动作块
+        currentActions.forEach(action => {
+            // 使用更可靠的选择器来找到动作块
+            const block = this.findActionBlock(action);
+            if (block) {
+                block.classList.add('playing');
+                
+                // 高亮对应的机器人部位
+                this.updateRobotPartHighlight(action.structure);
+            }
+        });
+        
+        // 标记已发送的动作
+        this.actions.forEach(action => {
+            if (action.sent) {
+                const block = this.findActionBlock(action);
+                if (block) {
+                    block.classList.add('sent');
+                }
+            }
+        });
+    }
+
+    // 查找动作块的辅助方法
+    findActionBlock(action) {
+        // 首先尝试通过data-action-id查找
+        let block = document.querySelector(`[data-action-id="${action.id}"]`);
+        
+        // 如果找不到，尝试通过其他属性查找
+        if (!block) {
+            const allBlocks = document.querySelectorAll('.action-block');
+            block = Array.from(allBlocks).find(block => {
+                const blockText = block.textContent;
+                return blockText.includes(action.structure) && 
+                       blockText.includes(`F${action.forwardAngle}`) &&
+                       blockText.includes(`R${action.bendAngle}`);
+            });
+        }
+        
+        return block;
+    }
+
+    // 清除高亮
+    clearHighlights() {
+        document.querySelectorAll('.action-block').forEach(block => {
+            block.classList.remove('playing');
+            block.classList.remove('sent');
+            block.style.boxShadow = '';
+            block.style.transform = '';
+        });
+        
+        // 清除机器人部位高亮
+        document.querySelectorAll('.robot-part').forEach(part => {
+            part.classList.remove('active');
+        });
+    }
+
+    // Reset所有舵机
+    async resetAll() {
+        const command = 'q';
+        const success = await this.sendCommand(command);
+        
+        if (success) {
+            console.log('✅ Reset command sent');
+            // Clear动作序列，但不ClearCode Editor
+            this.clearSequenceWithoutCodeEditor();
+        } else {
+            console.log('❌ Send Reset command failed');
+        }
+    }
+
+    // Clear序列
+    clearSequence() {
+        this.actions = [];
+        this.updateTimeline();
+        this.updateStatus();
+        this.updateCodeOutput();
+        
+        // 清除所有动作块的发送状态
+        document.querySelectorAll('.action-block').forEach(block => {
+            block.classList.remove('sent');
+        });
+    }
+
+    // Clear序列但不ClearCode Editor（用于Reset时）
+    clearSequenceWithoutCodeEditor() {
+        this.actions = [];
+        this.updateTimeline();
+        this.updateStatus();
+        
+        // 不ClearCode Editor，只Clear执行情况显示
+        const codeOutput = document.getElementById('codeOutput');
+        if (codeOutput) {
+            codeOutput.textContent = '// Action sequence cleared, but Code Editor content retained';
+        }
+        
+        // 清除所有动作块的发送状态
+        document.querySelectorAll('.action-block').forEach(block => {
+            block.classList.remove('sent');
+        });
+    }
+
+    // 导出代码
+    exportCode() {
+        const code = this.generateCode();
+        if (code) {
+            // 复制到剪贴板
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code has been copied to the clipboard!');
+            }).catch(() => {
+                // 如果剪贴板APIUnavailable，显示代码
+                prompt('Please copy the following code:', code);
+            });
+        } else {
+            alert('No code to export');
+        }
+    }
+
+    generateCode() {
+        if (this.actions.length === 0) return '';
+
+        return this.actions.map(action => {
+            let code = `${action.structure} F${action.forwardAngle} R${action.bendAngle} S${action.speed}`;
+            
+            // 优先使用原始Time Control命令，如果没有则使用delay格式
+            if (action.originalTimeControl) {
+                code += ` ${action.originalTimeControl}`;
+            } else if (action.delayTime > 0) {
+                code += ` D${action.delayTime}`;
+            }
+            
+            return code;
+        }).join('\n');
+    }
+
+    updateCodeOutput() {
+        const code = this.generateCode();
+        document.getElementById('codeOutput').textContent = code || '// No action sequence';
+        
+        // 同时更新Code Editor
+        const codeEditor = document.getElementById('codeEditor');
+        if (codeEditor) {
+            codeEditor.value = code;
+        }
+    }
+
+    // 同步代码到时间轴
+    syncCodeToTimeline() {
+        const codeEditor = document.getElementById('codeEditor');
+        if (!codeEditor) return;
+
+        const code = codeEditor.value.trim();
+        if (!code) {
+            alert('Please enter the action sequence instructions');
+            return;
+        }
+
+        try {
+            // Clear动作序列
+            this.clearSequence();
+            
+            // 解析代码并转换为动作对象
+            const newActions = this.parseCodeToActions(code);
+            
+            if (newActions.length === 0) {
+                alert('Unable to parse the instruction code, please check the format');
+                return;
+            }
+
+            // 替换现有动作序列
+            this.actions = newActions;
+            
+            // 更新时间轴和状态
+            this.updateTimeline();
+            this.updateStatus();
+            this.updateCodeOutput();
+            
+            console.log('✅ Code has been Sync to Timeline, parsed', newActions.length, 'actions');
+            
+            // 显示成功提示
+            this.showSyncSuccessNotification(newActions.length);
+            
+        } catch (error) {
+            console.error('Code parsing failed:', error);
+            alert('Code parsing failed: ' + error.message);
+        }
+    }
+
+    // 解析代码为动作对象
+    parseCodeToActions(code) {
+        const actions = [];
+        const lines = code.split('\n').filter(line => line.trim());
+        
+        // 按Structure分组，为每个Structure单独计算时间
+        let structureTimeline = {};
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line || line.startsWith('//')) continue;
+            
+            try {
+                const action = this.parseActionLine(line);
+                if (action) {
+                    actions.push(action);
+                }
+            } catch (error) {
+                console.warn('Skip invalid line:', line, error);
+            }
+        }
+        
+        // 第二遍：重新计算时间线和持续时间
+        structureTimeline = {}; // 重新初始化时间线
+        
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            const structure = action.structure;
+            
+            // 初始化该Structure的时间线
+            if (!structureTimeline[structure]) {
+                structureTimeline[structure] = 0;
+            }
+            
+            // 获取前一个动作来计算持续时间
+            const previousAction = this.getPreviousActionForStructureFromList(structure, actions, i);
+            action.duration = this.calculateDuration(action.forwardAngle, action.bendAngle, action.speed, previousAction);
+            
+            // 重新计算开始时间
+            if (structureTimeline[structure] === 0) {
+                // 这是该Structure的第一个动作，开始时间 = Pre-execution Delay时间
+                action.startTime = Math.round(action.delayTime);
+            } else {
+                // 这不是第一个动作，开始时间 = 前序动作的执行时间之和 + 当前动作的延迟时间之和
+                action.startTime = Math.round(structureTimeline[structure] + action.delayTime);
+            }
+            
+            // 更新该Structure的时间线：动作开始时间 + 动作持续时间
+            structureTimeline[structure] = action.startTime + action.duration;
+        }
+        
+        return actions;
+    }
+
+    // 解析单行动作指令
+    parseActionLine(line) {
+        // 支持格式：
+        // RF F30 R20 S2 D0
+        // RF F30 R20 S2 D500
+        // RF F30 R20 S2 D1000
+        // RF F30 R20 S2 (无Time Control，使用默认延迟)
+        
+        const actionMatch = line.match(/^([A-Z]{2})\s+F(-?\d+)\s+R(-?\d+)\s+S(\d+)(?:\s+D(\d+))?$/);
+        
+        if (!actionMatch) {
+            throw new Error(`Invalid command format: ${line}`);
+        }
+        
+        const [, structure, forwardAngle, bendAngle, speed, delayTime] = actionMatch;
+        // 解析后对角度进行Range限制
+        const clamped = this.clampAnglesForStructure(structure, parseInt(forwardAngle), parseInt(bendAngle));
+        
+        const action = {
+            id: Date.now() + Math.random(),
+            structure: structure,
+            forwardAngle: clamped.forwardAngle,
+            bendAngle: clamped.bendAngle,
+            speed: parseInt(speed),
+            delayTime: delayTime ? parseInt(delayTime) : 0,
+            startTime: 0, // 临时设置，稍后会更新
+            duration: 0, // 临时设置为0，稍后在第二遍Medium计算
+            sent: false,
+            // Save原始Time Control命令格式
+            originalTimeControl: delayTime ? `D${delayTime}` : null
+        };
+        
+        
+        
+        return action;
+    }
+
+    // Format Code
+    formatCode() {
+        const codeEditor = document.getElementById('codeEditor');
+        if (!codeEditor) return;
+
+        const code = codeEditor.value.trim();
+        if (!code) return;
+
+        try {
+            // 解析并重新Format Code
+            const actions = this.parseCodeToActions(code);
+            const formattedCode = this.generateFormattedCode(actions);
+            
+            codeEditor.value = formattedCode;
+            
+            console.log('✅ Code formatting completed');
+            
+        } catch (error) {
+            console.error('Code formatting failed:', error);
+            alert('Code formatting failed: ' + error.message);
+        }
+    }
+
+    // 生成格式化的代码
+    generateFormattedCode(actions) {
+        if (actions.length === 0) return '';
+        
+        const lines = actions.map(action => {
+            let line = `${action.structure} F${action.forwardAngle} R${action.bendAngle} S${action.speed}`;
+            
+            // 优先使用原始Time Control命令，如果没有则使用delay格式
+            if (action.originalTimeControl) {
+                line += ` ${action.originalTimeControl}`;
+            } else if (action.delayTime > 0) {
+                line += ` D${action.delayTime}`;
+            }
+            
+            return line;
+        });
+        
+        return lines.join('\n');
+    }
+
+    // 显示同步成功通知
+    showSyncSuccessNotification(actionCount) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+        `;
+        notification.innerHTML = `🔄 Code synchronization successful!<br><small>Parsed ${actionCount} actions</small>`;
+        
+        document.body.appendChild(notification);
+        
+        // 3秒后自动移除
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+
+    updateStatus() {
+        document.getElementById('actionCount').textContent = this.actions.length;
+        document.getElementById('totalDuration').textContent = `${this.getTotalDuration()}ms`;
+    }
+
+    getTotalDuration() {
+        if (this.actions.length === 0) return 0;
+        
+        // 计算总时长：考虑所有动作的开始时间、持续时间和延迟时间
+        let maxTime = 0;
+        
+        // 按Structure分组计算每个Structure的总时长
+        const structureTimeline = {};
+        
+        this.actions.forEach(action => {
+            if (!structureTimeline[action.structure]) {
+                structureTimeline[action.structure] = 0;
+            }
+            
+            // 该Structure的当前时间线（前序动作的执行时间之和 + 前序动作的延迟时间之和）
+            const currentTime = structureTimeline[action.structure];
+            
+            // 动作开始时间（考虑延迟）
+            const actionStartTime = Math.max(currentTime, action.startTime);
+            
+            // 动作结束时间
+            const actionEndTime = actionStartTime + action.duration;
+            
+            // 更新该Structure的时间线：动作结束后等待延迟时间
+            // 这样下一个动作的startTime就会是：前序动作执行时间之和 + 前序动作延迟时间之和
+            structureTimeline[action.structure] = actionEndTime + action.delayTime;
+            
+            // 更新最大时间（包括延迟时间）
+            maxTime = Math.max(maxTime, actionEndTime + action.delayTime);
+        });
+        
+        // 确保最小持续时间为1000ms，避免动画过Fast结束
+        return Math.max(maxTime, 1000);
+    }
+
+    zoomIn() {
+        this.zoomLevel = Math.min(this.zoomLevel * 1.5, 5);
+        this.updateActionBlocks();
+    }
+
+    zoomOut() {
+        this.zoomLevel = Math.max(this.zoomLevel / 1.5, 0.1);
+        this.updateActionBlocks();
+    }
+
+    fitToView() {
+        const maxTime = this.getTotalDuration();
+        const containerWidth = document.querySelector('.timeline').offsetWidth - 200; // 减去标签宽度
+        this.zoomLevel = containerWidth / (maxTime / 1000) / this.timelineScale;
+        this.updateActionBlocks();
+    }
+
+    updateActionTimeDisplay(block, action) {
+        const startTimeText = this.formatTime(action.startTime);
+        const durationText = this.formatTime(action.duration);
+        const delayText = action.delayTime > 0 ? this.formatTime(action.delayTime) : '0ms';
+        
+        const timeDisplay = block.querySelector('.action-time');
+        if (timeDisplay) {
+            timeDisplay.innerHTML = `
+                <div class="start-time">Start: ${startTimeText}</div>
+                <div class="duration-time">Execute: ${durationText}</div>
+                <div class="delay-time">Delay: ${delayText}</div>
+            `;
+        }
+    }
+
+    undo() {
+        // 实现撤销功能
+        console.log('Undo');
+    }
+
+    redo() {
+        // 实现重做功能
+        console.log('Redo');
+    }
+
+    formatTime(ms) {
+        if (ms < 1000) {
+            return `${ms}ms`;
+        }
+        
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const milliseconds = ms % 1000;
+
+        let timeString = '';
+        if (minutes > 0) {
+            timeString += `${minutes}m `;
+        }
+        if (seconds > 0 || minutes > 0) {
+            timeString += `${seconds}s`;
+        }
+        if (milliseconds > 0) {
+            timeString += ` ${milliseconds}ms`;
+        }
+        
+        return timeString.trim() || '0ms';
+    }
+
+    // 更新机器人部位高亮
+    updateRobotPartHighlight(structure) {
+        let targetPart = null;
+        
+        switch(structure) {
+            case 'HD':
+                targetPart = document.getElementById('head');
+                break;
+            case 'TA':
+                targetPart = document.getElementById('tail');
+                break;
+            case 'LE':
+                targetPart = document.getElementById('left-ear');
+                break;
+            case 'RE':
+                targetPart = document.getElementById('right-ear');
+                break;
+            case 'LF':
+                targetPart = document.getElementById('left-front-leg');
+                break;
+            case 'RF':
+                targetPart = document.getElementById('right-front-leg');
+                break;
+            case 'LR':
+                targetPart = document.getElementById('left-back-leg');
+                break;
+            case 'RR':
+                targetPart = document.getElementById('right-back-leg');
+                break;
+            default:
+                console.log('Unknown Structure:', structure);
+                return;
+        }
+        
+        if (targetPart) {
+            targetPart.classList.add('active');
+            console.log('Activate robot part:', structure);
+        } else {
+            console.error('Unable to locate the corresponding robot part:', structure);
+        }
+    }
+
+    // 添加WiFi连接按钮
+    addWiFiConnectionButton() {
+        const statusBar = document.querySelector('.status-bar');
+        
+        // 创建连接按钮
+        const connectButton = document.createElement('button');
+        connectButton.className = 'btn btn-primary';
+        connectButton.id = 'connectWiFi';
+        connectButton.textContent = '📡 Connect ESP32';
+        connectButton.addEventListener('click', () => {
+            this.connectToESP32();
+        });
+        
+        // 创建测试连接按钮
+        const testButton = document.createElement('button');
+        testButton.className = 'btn btn-secondary';
+        testButton.id = 'testConnection';
+        testButton.textContent = '🧪 Test Connection';
+        testButton.addEventListener('click', () => {
+            this.testConnection();
+        });
+        
+        statusBar.appendChild(testButton);
+        statusBar.appendChild(connectButton);
+    }
+
+
+
+    // 连接ESP32
+    async connectToESP32() {
+        try {
+            // 检查是否已经连接
+            if (this.isConnected) {
+                this.disconnectFromESP32();
+                return;
+            }
+
+            // 尝试连接到ESP32服务器
+            const response = await fetch('http://192.168.4.1/status', {
+                method: 'GET',
+                mode: 'cors'
+            });
+            
+            if (response.ok) {
+                this.isConnected = true;
+                this.updateConnectionStatus(true);
+                console.log('✅ Connected to ESP32');
+                
+                // 开始定期检查连接状态
+                this.startConnectionMonitor();
+            } else {
+                throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.error('Connection failed:', error);
+            alert('Connection failed: ' + error.message);
+            this.updateConnectionStatus(false);
+        }
+    }
+
+    // 开始连接监控
+    startConnectionMonitor() {
+        this.connectionMonitor = setInterval(async () => {
+            if (!this.isConnected) return;
+            
+            try {
+                const response = await fetch('http://192.168.4.1/status', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    this.isConnected = false;
+                    this.updateConnectionStatus(false);
+                    console.log('❌ Connection to ESP32 has been disconnected');
+                }
+            } catch (error) {
+                this.isConnected = false;
+                this.updateConnectionStatus(false);
+                console.log('❌ Connection to ESP32 has been disconnected');
+            }
+        }, 5000); // 每5秒检查一次
+    }
+
+    // Stop连接监控
+    stopConnectionMonitor() {
+        if (this.connectionMonitor) {
+            clearInterval(this.connectionMonitor);
+            this.connectionMonitor = null;
+        }
+    }
+
+    // 更新连接状态
+    updateConnectionStatus(connected) {
+        this.isConnected = connected;
+        
+        const statusIndicator = document.getElementById('connectionStatus');
+        const connectionText = document.getElementById('connectionText');
+        const connectButton = document.getElementById('connectWiFi');
+        
+        if (connected) {
+            statusIndicator.classList.remove('disconnected');
+            connectionText.textContent = 'Connected ESP32';
+            if (connectButton) {
+                connectButton.textContent = '📡 Disconnect ESP32';
+                connectButton.className = 'btn btn-danger';
+                connectButton.onclick = () => this.disconnectFromESP32();
+            }
+        } else {
+            statusIndicator.classList.add('disconnected');
+            connectionText.textContent = 'Disconnected ESP32';
+            if (connectButton) {
+                connectButton.textContent = '📡 Connect ESP32';
+                connectButton.className = 'btn btn-primary';
+                connectButton.onclick = () => this.connectToESP32();
+            }
+        }
+        
+        // 更新播放按钮状态提示
+        const playButton = document.getElementById('playSequence');
+        if (playButton) {
+            if (connected) {
+                playButton.title = 'Play action sequence and send to ESP32 to execute';
+            } else {
+                playButton.title = 'Play action sequence preview (not connected to ESP32)';
+            }
+        }
+        
+        // 显示连接状态提示
+        this.showConnectionStatusNotification(connected);
+        
+        // 更新播放按钮提示
+        this.updatePlayButtonTooltip();
+    }
+
+    // 更新播放按钮提示
+    updatePlayButtonTooltip() {
+        const playButton = document.getElementById('playSequence');
+        if (playButton) {
+            if (this.isConnected) {
+                playButton.title = 'Play action sequence and send to ESP32 to execute';
+                playButton.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            } else {
+                playButton.title = 'Play action sequence preview (not connected to ESP32)';
+                playButton.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            }
+        }
+    }
+
+    // 显示连接状态通知
+    showConnectionStatusNotification(connected) {
+        // 创建状态通知
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: ${connected ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: 500;
+            animation: slideInLeft 0.5s ease-out;
+        `;
+        
+        const icon = connected ? '✅' : '⚠️';
+        const message = connected ? 'Connected to ESP32' : 'Disconnected ESP32, only preview animation';
+        notification.innerHTML = `${icon} ${message}`;
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInLeft {
+                from { transform: translateX(-100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // 3秒后自动移除
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+
+    // 断开连接
+    async disconnectFromESP32() {
+        try {
+            this.isConnected = false;
+            this.updateConnectionStatus(false);
+            this.stopConnectionMonitor();
+            console.log('✅ ESP32 connection has been disconnected');
+            
+        } catch (error) {
+            console.error('Disconnect from ESP32 failed:', error);
+        }
+    }
+
+    // 测试连接
+    async testConnection() {
+        try {
+            console.log('🧪 Test ESP32 connection...');
+            
+            // 检查网络连接状态
+            if (!navigator.onLine) {
+                throw new Error('Network connection Unavailable, please check WiFi connection');
+            }
+            
+            // 设置超时时间
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+            
+            const response = await fetch('http://192.168.4.1/test', {
+                method: 'GET',
+                mode: 'cors',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+                const result = await response.text();
+                alert('✅ Connection test successful!\n\nESP32 response: ' + result);
+                console.log('Connection test successful:', result);
+            } else {
+                throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.error('Connection test failed:', error);
+            
+            let errorMessage = '❌ Connection test failed!\n\n';
+            
+            if (error.name === 'AbortError') {
+                errorMessage += 'Error information: Connection timeout\n\n';
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage += 'Error information: Network request failed\n\n';
+            } else {
+                errorMessage += 'Error information: ' + error.message + '\n\n';
+            }
+            
+            errorMessage += 'Please ensure:\n';
+            errorMessage += '1. Connected to ESP32\'s WiFi hotspot (RobotControl)\n';
+            errorMessage += '2. ESP32 is running and creating a WiFi hotspot\n';
+            errorMessage += '3. ESP32\'s IP address is 192.168.4.1\n';
+            errorMessage += '4. Firewall does not block connection\n';
+            errorMessage += '5. Browser supports CORS cross-domain request';
+            
+            alert(errorMessage);
+        }
+    }
+
+    // 监控网络状态
+    monitorNetworkStatus() {
+        const updateNetworkStatus = () => {
+            const networkStatus = document.getElementById('networkStatus');
+            if (networkStatus) {
+                if (navigator.onLine) {
+                    networkStatus.innerHTML = '🌐 Network status: Online';
+                    networkStatus.style.color = '#10b981';
+                } else {
+                    networkStatus.innerHTML = '🌐 Network status: Offline';
+                    networkStatus.style.color = '#ef4444';
+                }
+            }
+        };
+
+        // 初始状态
+        updateNetworkStatus();
+
+        // 监听网络状态变化
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+    }
+}
+
+// 初始化应用
+document.addEventListener('DOMContentLoaded', () => {
+    window.actionDesigner = new ActionSequenceDesigner();
+    
+    // 添加测试按钮
+    const testBtn = document.createElement('button');
+    testBtn.textContent = '🧪 Test Timeline';
+    testBtn.style.position = 'fixed';
+    testBtn.style.top = '10px';
+    testBtn.style.right = '10px';
+    testBtn.style.zIndex = '1000';
+    testBtn.onclick = () => {
+        console.log('=== Timeline test ===');
+        console.log('Track container:', document.getElementById('timelineTracks'));
+        console.log('Track number:', document.querySelectorAll('.timeline-track').length);
+        console.log('Track content:', document.querySelectorAll('.track-content').length);
+        console.log('Action block number:', document.querySelectorAll('.action-block').length);
+        
+        // 测试添加一个动作
+        const designer = window.actionDesigner;
+        if (designer) {
+            designer.selectStructure('RF');
+            designer.addAction();
+        }
+    };
+    document.body.appendChild(testBtn);
+});
+
+// 添加一些示例数据用于演示
+function loadExample() {
+    const designer = window.actionDesigner;
+    if (!designer) return;
+
+    // Clear现有动作
+    designer.actions = [];
+
+    // 添加示例动作 - 展示并行执行逻辑
+    const exampleActions = [
+        {
+            id: Date.now() + 1,
+            structure: 'RF',
+            forwardAngle: 30,
+            bendAngle: 20,
+            speed: 2,
+            delayTime: 0,
+            startTime: 0,  // RF从0开始
+            duration: 300
+        },
+        {
+            id: Date.now() + 2,
+            structure: 'LF',
+            forwardAngle: -30,
+            bendAngle: 15,
+            speed: 2,
+            delayTime: 0,
+            startTime: 0,  // LF也从0开始（并行执行）
+            duration: 300
+        },
+        {
+            id: Date.now() + 3,
+            structure: 'RF',
+            forwardAngle: -30,
+            bendAngle: -20,
+            speed: 2,
+            delayTime: 0,
+            startTime: 300,  // RF的第二个动作，在第一个动作结束后开始
+            duration: 300
+        },
+        {
+            id: Date.now() + 4,
+            structure: 'RE',
+            forwardAngle: 20,
+            bendAngle: 10,
+            speed: 2,
+            delayTime: 500,  // 有延迟时间
+            startTime: 500,  // 延迟500ms后开始
+            duration: 200
+        }
+    ];
+
+    designer.actions = exampleActions;
+    designer.updateTimeline();
+    designer.updateStatus();
+    designer.updateCodeOutput();
+}
+
+// 在控制台Medium可以调用 loadExample() 来加载示例数据
+window.loadExample = loadExample;
+    </script>
+</body>
+</html> 

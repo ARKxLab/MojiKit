@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MojiKit动作序列设计器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 600px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 25px;
+            border-right: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .structure-panel {
+            margin-bottom: 35px;
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #334155;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .structure-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .structure-btn.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .structure-btn {
+            padding: 15px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9em;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .structure-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+
+        .structure-btn.active {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .action-panel {
+            margin-bottom: 35px;
+        }
+
+        .action-form {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9em;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(100, 116, 139, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .timeline-container {
+            padding: 25px;
+            flex: 1;
+            min-width: 0;
+            background: white;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .timeline-header h3 {
+            color: #334155;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .timeline-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .timeline {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 25px;
+            min-height: 400px;
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+            width: 100%;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .timeline-ruler {
+            height: 35px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .timeline-markers {
+            display: flex;
+            height: 100%;
+        }
+
+        .timeline-marker {
+            flex: 1;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .timeline-tracks {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 800px;
+            position: relative;
+        }
+
+        .timeline-track {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .track-label {
+            width: 100px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .track-content {
+            flex: 1;
+            height: 70px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 10px;
+            position: relative;
+            border: 1px solid #e2e8f0;
+            overflow: visible;
+            min-width: 600px;
+            z-index: 1;
+        }
+
+        .action-block {
+            position: absolute;
+            height: 60px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-block:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .action-block.rf { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .action-block.lf { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .action-block.rr { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .action-block.lr { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .action-block.ta { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .action-block.re { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+        .action-block.le { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+        .action-block.hd { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+
+        .action-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            flex: 1;
+            min-width: 0;
+            padding: 0 8px;
+        }
+
+        .action-title {
+            font-weight: 700;
+            font-size: 11px;
+            line-height: 1.2;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .action-time {
+            display: flex;
+            flex-direction: column;
+            font-size: 9px;
+            line-height: 1.1;
+            opacity: 0.9;
+        }
+
+        .start-time, .duration-time {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preview-panel {
+            margin-top: 25px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .code-output {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #334155;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .robot-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 220px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .robot-svg {
+            width: 100%;
+            height: 100%;
+            max-width: 300px;
+            max-height: 200px;
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 15px 25px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+
+        .status-indicator.disconnected {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e2e8f0;
+        }
+
+        .close {
+            color: #64748b;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #334155;
+        }
+
+        .drag-handle {
+            cursor: move;
+            padding: 3px 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: rgba(255,255,255,0.6);
+            cursor: ew-resize;
+            border-radius: 3px;
+        }
+
+        /* 机器人部位激活状态样式 */
+        .robot-part.active {
+            fill: #3b82f6 !important;
+            stroke: #1d4ed8 !important;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
+        }
+
+        .robot-part.active:hover {
+            fill: #1d4ed8 !important;
+            stroke: #1e40af !important;
+            filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.4));
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 280px 1fr;
+            }
+            
+            .sidebar {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .timeline-container {
+                padding: 20px;
+            }
+        }
+
+        /* 自定义下拉菜单样式 */
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .custom-select-header:hover {
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .custom-select-header:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .dropdown-arrow {
+            color: #64748b;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .custom-select.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .custom-select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .custom-option:hover {
+            background-color: #eff6ff;
+        }
+
+        .custom-option.selected {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .selected-option {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 机器人动作序列设计器</h1>
+            <p>可视化设计多结构并发控制的动作序列</p>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="structure-panel">
+                    <div class="panel-title">🏗️ 结构选择</div>
+                    <div class="structure-grid">
+                        <!-- 第一行：左耳LE、右耳RE -->
+                        <div class="structure-btn" data-structure="LE">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M3.5 1.5C4.5 1 5.8 0.8 7.2 1.1C8.6 1.4 10.1 2.1 11.6 3.1C14.6 4.6 17.1 6.7 18.2 8.3C19.3 9.9 19.3 10.8 18.9 11.4C18.5 12 17.7 12.4 16.6 12.8C15.5 13.2 14.1 13.6 12.6 14.1C11.1 14.6 9.7 15.1 8.5 15.6C7.3 16.1 6.4 16.5 5.8 16.7C5.2 16.9 4.9 17 4.7 16.9C4.5 16.8 4.3 16.6 4.1 16.2C3.9 15.8 3.7 15.2 3.5 14.4C3.3 13.6 3.2 12.6 3.2 11.4C3.2 10.2 3.3 9.1 3.5 8.1C3.7 7.1 3.9 6.3 4.1 5.7C4.3 5.1 4.5 4.7 4.7 4.5C4.9 4.3 5.2 4.2 5.8 4.1C6.4 4 7.3 3.9 8.5 3.8C9.7 3.7 11.1 3.6 12.6 3.5C14.1 3.4 15.5 3.3 16.6 3.2C17.7 3.1 18.5 3 18.9 2.9C19.3 2.8 19.3 2.7 18.2 2.6C17.1 2.5 14.6 2.4 11.6 2.3C10.1 2.2 8.6 2.1 7.2 2C5.8 1.9 4.5 1.8 3.5 1.7" fill="currentColor"/>
+                            </svg>
+                            左耳<br>LE
+                        </div>
+                        <div class="structure-btn" data-structure="RE">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M16.5 1.5C15.5 1 14.2 0.8 12.8 1.1C11.4 1.4 9.9 2.1 8.4 3.1C5.4 4.6 2.9 6.7 1.8 8.3C0.7 9.9 0.7 10.8 1.1 11.4C1.5 12 2.3 12.4 3.4 12.8C4.5 13.2 5.9 13.6 7.4 14.1C8.9 14.6 10.3 15.1 11.5 15.6C12.7 16.1 13.6 16.5 14.2 16.7C14.8 16.9 15.1 17 15.3 16.9C15.5 16.8 15.7 16.6 15.9 16.2C16.1 15.8 16.3 15.2 16.5 14.4C16.7 13.6 16.8 12.6 16.8 11.4C16.8 10.2 16.7 9.1 16.5 8.1C16.3 7.1 16.1 6.3 15.9 5.7C15.7 5.1 15.5 4.7 15.3 4.5C15.1 4.3 14.8 4.2 14.2 4.1C13.6 4 12.7 3.9 11.5 3.8C10.3 3.7 8.9 3.6 7.4 3.5C5.9 3.4 4.5 3.3 3.4 3.2C2.3 3.1 1.5 3 1.1 2.9C0.7 2.8 0.7 2.7 1.8 2.6C2.9 2.5 5.4 2.4 8.4 2.3C9.9 2.2 11.4 2.1 12.8 2C14.2 1.9 15.5 1.8 16.5 1.7" fill="currentColor"/>
+                            </svg>
+                            右耳<br>RE
+                        </div>
+                        <!-- 第二行：头部HD -->
+                        <div class="structure-btn full-width" data-structure="HD">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M10 2C6.5 2 3.5 3.5 2 6C1.5 7 1 8.5 1 10C1 13.5 3.5 16 7 16C10.5 16 13 13.5 13 10C13 8.5 12.5 7 12 6C10.5 3.5 7.5 2 4 2" fill="currentColor"/>
+                            </svg>
+                            头部<br>HD
+                        </div>
+                        <!-- 第三行：左前脚LF、右前脚RF -->
+                        <div class="structure-btn" data-structure="LF">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M2 8C2 6 3 4 5 3C6 2.5 7 2 8 2C9 2 10 2.5 11 3C13 4 14 6 14 8C14 10 13 12 11 13C10 13.5 9 14 8 14C7 14 6 13.5 5 13C3 12 2 10 2 8Z" fill="currentColor"/>
+                            </svg>
+                            左前脚<br>LF
+                        </div>
+                        <div class="structure-btn" data-structure="RF">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M6 8C6 6 7 4 9 3C10 2.5 11 2 12 2C13 2 14 2.5 15 3C17 4 18 6 18 8C18 10 17 12 15 13C14 13.5 13 14 12 14C11 14 10 13.5 9 13C7 12 6 10 6 8Z" fill="currentColor"/>
+                            </svg>
+                            右前脚<br>RF
+                        </div>
+                        <!-- 第四行：左后脚LR、右后脚RR -->
+                        <div class="structure-btn" data-structure="LR">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M2 12C2 14 3 16 5 17C6 17.5 7 18 8 18C9 18 10 17.5 11 17C13 16 14 14 14 12C14 10 13 8 11 7C10 6.5 9 6 8 6C7 6 6 6.5 5 7C3 8 2 10 2 12Z" fill="currentColor"/>
+                            </svg>
+                            左后脚<br>LR
+                        </div>
+                        <div class="structure-btn" data-structure="RR">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M6 12C6 14 7 16 9 17C10 17.5 11 18 12 18C13 18 14 17.5 15 17C17 16 18 14 18 12C18 10 17 8 15 7C14 6.5 13 6 12 6C11 6 10 6.5 9 7C7 8 6 10 6 12Z" fill="currentColor"/>
+                            </svg>
+                            右后脚<br>RR
+                        </div>
+                        <!-- 第五行：尾巴TA -->
+                        <div class="structure-btn full-width" data-structure="TA">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                <path d="M10 16C9 16 8 16.5 7 17.5C6 18.5 5.5 19.5 5.5 20.5C5.5 21.5 6 22.5 7 23.5C8 24.5 9 25 10 25C11 25 12 24.5 13 23.5C14 22.5 14.5 21.5 14.5 20.5C14.5 19.5 14 18.5 13 17.5C12 16.5 11 16 10 16Z" fill="currentColor"/>
+                            </svg>
+                            尾巴<br>TA
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <div class="panel-title">⚙️ 动作编辑</div>
+                    <div class="action-form">
+                        <div class="form-group">
+                            <label for="forwardAngle">前方角度 (F)</label>
+                            <input type="number" id="forwardAngle" min="-90" max="90" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="bendAngle">弯曲角度 (R)</label>
+                            <input type="number" id="bendAngle" min="-90" max="90" value="20">
+                        </div>
+                        <div class="form-group">
+                            <label>速度等级 (S)</label>
+                            <select id="speedLevel">
+                                <option value="1">S1 - 最慢 (20ms)</option>
+                                <option value="2" selected>S2 - 慢 (15ms)</option>
+                                <option value="3">S3 - 中 (10ms)</option>
+                                <option value="4">S4 - 快 (5ms)</option>
+                                <option value="5">S5 - 最快 (2ms)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>执行前延迟 (ms)</label>
+                            <input type="number" id="delayTime" min="0" max="10000" value="0" placeholder="动作执行前等待时间">
+                        </div>
+                        <button class="btn btn-primary" id="addAction">➕ 添加动作</button>
+                    </div>
+                </div>
+
+                <div class="preview-panel">
+                    <div class="panel-title">🤖 机器人预览</div>
+                    <div class="robot-preview">
+                        <svg class="robot-svg" width="571" height="702" viewBox="0 0 571 702" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="body" class="robot-part" data-part="body" d="M285.894 243.174C334.726 243.174 379.301 269.764 411.816 309.409C444.331 349.052 464.396 401.314 464.396 451.687C464.396 501.874 444.491 540.58 412.444 566.825C380.298 593.151 335.626 607.174 285.894 607.174C236.161 607.174 191.49 593.151 159.346 566.825C127.301 540.58 107.397 501.874 107.396 451.687C107.396 401.314 127.46 349.052 159.974 309.409C192.488 269.764 237.061 243.174 285.894 243.174Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="head" class="robot-part" data-part="HD" d="M285.001 261.5C239.205 261.5 198.512 257.974 169.379 245.61C154.899 239.465 143.499 231.226 135.703 220.35C127.932 209.508 123.5 195.711 123.5 178C123.5 107.175 195.049 44.3683 285.001 44.3682C374.953 44.3682 446.5 107.175 446.5 178C446.5 195.711 442.068 209.508 434.298 220.35C426.502 231.226 415.101 239.465 400.622 245.61C371.49 257.974 330.797 261.5 285.001 261.5Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="tail" class="robot-part" data-part="TA" d="M285.896 558.5C275.885 558.5 266.144 564.834 258.677 577.716C251.217 590.585 246.396 609.499 246.396 633C246.396 656.527 251.227 672.464 258.428 682.4C265.503 692.162 275.117 696.5 285.896 696.5C296.676 696.5 306.291 692.162 313.365 682.4C320.566 672.464 325.396 656.527 325.396 633C325.396 609.498 320.576 590.585 313.116 577.716C305.649 564.834 295.908 558.5 285.896 558.5Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="left-ear" class="robot-part" data-part="LE" d="M131.622 35.2894C137.969 31.6247 145.864 30.7139 154.736 32.0907C163.61 33.4676 173.148 37.0921 182.381 42.0803C200.983 52.1293 217.301 67.1205 223.765 78.3162C226.932 83.8018 226.944 86.9827 226.166 89.0423C225.293 91.3497 222.919 93.7087 218.198 96.3918C213.541 99.0379 207.542 101.502 200.441 104.535C193.464 107.515 185.651 110.956 177.894 115.435C170.136 119.914 163.25 124.959 157.18 129.511C151.003 134.145 145.87 138.108 141.251 140.817C136.567 143.564 133.336 144.441 130.902 144.043C128.729 143.687 125.981 142.086 122.814 136.6C116.35 125.405 111.526 103.777 112.124 82.6433C112.421 72.1528 114.05 62.0806 117.294 53.7079C120.538 45.3354 125.274 38.9542 131.622 35.2894Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="right-ear" class="robot-part" data-part="RE" d="M437.378 35.2894C431.031 31.6247 423.136 30.7139 414.264 32.0907C405.39 33.4676 395.852 37.0921 386.619 42.0803C368.017 52.1293 351.699 67.1205 345.235 78.3162C342.068 83.8018 342.056 86.9827 342.834 89.0423C343.707 91.3497 346.081 93.7087 350.802 96.3918C355.459 99.0379 361.458 101.502 368.559 104.535C375.536 107.515 383.349 110.956 391.106 115.435C398.864 119.914 405.75 124.959 411.82 129.511C417.997 134.145 423.13 138.108 427.749 140.817C432.433 143.564 435.664 144.441 438.098 144.043C440.271 143.687 443.019 142.086 446.186 136.6C452.65 125.405 457.474 103.777 456.876 82.6433C456.579 72.1528 454.95 62.0806 451.706 53.7079C448.462 45.3354 443.726 38.9542 437.378 35.2894Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="left-front-leg" class="robot-part" data-part="LF" d="M51.8204 253.471C45.8296 224.122 49.6188 197.913 67.2573 185.602C74.3726 180.636 79.068 180.249 82.7004 181.528C86.7827 182.964 90.8495 186.907 95.6693 193.584C100.5 200.275 105.212 208.377 111.385 217.726C117.414 226.858 124.525 236.654 133.562 245.691C142.588 254.716 151.521 261.166 159.298 266.409C167.265 271.779 173.469 275.556 177.929 279.634C182.14 283.485 184.142 287.046 184.182 291.721C184.225 296.795 181.975 303.917 175.573 314.766C163.949 334.465 150.317 345.713 136.186 348.424C122.237 351.1 106.37 345.711 89.5402 328.881C72.8218 312.163 57.7389 282.465 51.8204 253.471Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="right-front-leg" class="robot-part" data-part="RF" d="M519.076 253.471C525.067 224.122 521.278 197.913 503.639 185.602C496.524 180.636 491.828 180.249 488.196 181.528C484.114 182.964 480.047 186.907 475.227 193.584C470.397 200.275 465.685 208.377 459.512 217.726C453.482 226.858 446.371 236.654 437.334 245.691C428.309 254.716 419.376 261.166 411.599 266.409C403.632 271.779 397.427 275.556 392.968 279.634C388.756 283.485 386.754 287.046 386.715 291.721C386.671 296.795 388.921 303.917 395.323 314.766C406.948 334.465 420.579 345.713 434.71 348.424C448.659 351.1 464.527 345.711 481.356 328.881C498.075 312.163 513.158 282.465 519.076 253.471Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="left-back-leg" class="robot-part" data-part="LR" d="M51.8204 615.982C45.8296 645.331 49.6188 671.54 67.2573 683.851C74.3726 688.817 79.068 689.203 82.7004 687.925C86.7827 686.488 90.8495 682.545 95.6693 675.869C100.5 669.178 105.212 661.075 111.385 651.726C117.414 642.595 124.525 632.799 133.562 623.762C142.588 614.736 151.521 608.286 159.298 603.044C167.265 597.673 173.469 593.896 177.929 589.819C182.14 585.968 184.142 582.407 184.182 577.732C184.225 572.657 181.975 565.536 175.573 554.686C163.949 534.988 150.317 523.739 136.186 521.028C122.237 518.352 106.37 523.742 89.5402 540.571C72.8218 557.29 57.7389 586.987 51.8204 615.982Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+<path id="right-back-leg" class="robot-part" data-part="RR" d="M519.076 615.982C525.067 645.331 521.278 671.54 503.639 683.851C496.524 688.817 491.828 689.203 488.196 687.925C484.114 686.488 480.047 682.545 475.227 675.869C470.397 669.178 465.685 661.075 459.512 651.726C453.482 642.595 446.371 632.799 437.334 623.762C428.309 614.736 419.376 608.286 411.599 603.044C403.632 597.673 397.427 593.896 392.968 589.819C388.756 585.968 386.754 582.407 386.715 577.732C386.671 572.657 388.921 565.536 395.323 554.686C406.948 534.988 420.579 523.739 434.71 521.028C448.659 518.352 464.527 523.742 481.356 540.571C498.075 557.29 513.158 586.987 519.076 615.982Z" fill="#F7F7F7" stroke="#D6D6D6" stroke-width="9"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-container">
+                <div class="timeline-header">
+                    <h3>⏰ 时间轴编辑器</h3>
+                    <div class="timeline-controls">
+                        <button class="btn btn-secondary" id="zoomIn">🔍+</button>
+                        <button class="btn btn-secondary" id="zoomOut">🔍-</button>
+                        <button class="btn btn-secondary" id="fitToView">📐 适应视图</button>
+                        <button class="btn btn-secondary" id="clearSequence">🗑️ 清空</button>
+                    </div>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-ruler">
+                        <div class="timeline-markers" id="timelineMarkers">
+                            <!-- 时间标记将通过JavaScript生成 -->
+                        </div>
+                    </div>
+                    <div class="timeline-tracks" id="timelineTracks">
+                        <!-- 轨道将通过JavaScript生成 -->
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <div class="panel-title">🎮 控制面板</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="playSequence">▶️ 播放序列</button>
+                        <button class="btn btn-secondary" id="pauseSequence">⏸️ 暂停</button>
+                        <button class="btn btn-secondary" id="stopSequence">⏹️ 停止</button>
+                        <button class="btn btn-secondary" id="resetAll">🔄 复位</button>
+                    </div>
+                </div>
+
+                <div class="preview-panel">
+                    <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>📝 执行情况</span>
+                        <button class="btn btn-secondary" id="exportCode">📋 导出指令代码</button>
+                    </div>
+                    <div class="code-output" id="codeOutput" style="min-height: 100px;">
+// 动作序列代码将在这里显示
+// 例如: RF F30 R20 S2 @after0;LF F-30 R15 S2 @with500
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator" id="connectionStatus"></div>
+                <span id="connectionText">未连接</span>
+            </div>
+            <div class="status-item">
+                <span>动作数量: <span id="actionCount">0</span></span>
+            </div>
+            <div class="status-item">
+                <span>总时长: <span id="totalDuration">0ms</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动作编辑模态框 -->
+    <div id="actionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>编辑动作</h3>
+            <div class="action-form">
+                <div class="form-group">
+                    <label>结构</label>
+                    <div class="custom-select" id="editStructureContainer">
+                        <div class="custom-select-header" id="editStructureHeader">
+                            <span class="selected-option">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M6 8C6 6 7 4 9 3C10 2.5 11 2 12 2C13 2 14 2.5 15 3C17 4 18 6 18 8C18 10 17 12 15 13C14 13.5 13 14 12 14C11 14 10 13.5 9 13C7 12 6 10 6 8Z" fill="currentColor"/>
+                                </svg>
+                                右前脚 (RF)
+                            </span>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
+                        <div class="custom-select-options" id="editStructureOptions" style="display: none;">
+                            <div class="custom-option" data-value="RF">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M6 8C6 6 7 4 9 3C10 2.5 11 2 12 2C13 2 14 2.5 15 3C17 4 18 6 18 8C18 10 17 12 15 13C14 13.5 13 14 12 14C11 14 10 13.5 9 13C7 12 6 10 6 8Z" fill="currentColor"/>
+                                </svg>
+                                右前脚 (RF)
+                            </div>
+                            <div class="custom-option" data-value="LF">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M2 8C2 6 3 4 5 3C6 2.5 7 2 8 2C9 2 10 2.5 11 3C13 4 14 6 14 8C14 10 13 12 11 13C10 13.5 9 14 8 14C7 14 6 13.5 5 13C3 12 2 10 2 8Z" fill="currentColor"/>
+                                </svg>
+                                左前脚 (LF)
+                            </div>
+                            <div class="custom-option" data-value="RR">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M6 12C6 14 7 16 9 17C10 17.5 11 18 12 18C13 18 14 17.5 15 17C17 16 18 14 18 12C18 10 17 8 15 7C14 6.5 13 6 12 6C11 6 10 6.5 9 7C7 8 6 10 6 12Z" fill="currentColor"/>
+                                </svg>
+                                右后脚 (RR)
+                            </div>
+                            <div class="custom-option" data-value="LR">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M2 12C2 14 3 16 5 17C6 17.5 7 18 8 18C9 18 10 17.5 11 17C13 16 14 14 14 12C14 10 13 8 11 7C10 6.5 9 6 8 6C7 6 6 6.5 5 7C3 8 2 10 2 12Z" fill="currentColor"/>
+                                </svg>
+                                左后脚 (LR)
+                            </div>
+                            <div class="custom-option" data-value="TA">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M10 16C9 16 8 16.5 7 17.5C6 18.5 5.5 19.5 5.5 20.5C5.5 21.5 6 22.5 7 23.5C8 24.5 9 25 10 25C11 25 12 24.5 13 23.5C14 22.5 14.5 21.5 14.5 20.5C14.5 19.5 14 18.5 13 17.5C12 16.5 11 16 10 16Z" fill="currentColor"/>
+                                </svg>
+                                尾巴 (TA)
+                            </div>
+                            <div class="custom-option" data-value="RE">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M16.5 1.5C15.5 1 14.2 0.8 12.8 1.1C11.4 1.4 9.9 2.1 8.4 3.1C5.4 4.6 2.9 6.7 1.8 8.3C0.7 9.9 0.7 10.8 1.1 11.4C1.5 12 2.3 12.4 3.4 12.8C4.5 13.2 5.9 13.6 7.4 14.1C8.9 14.6 10.3 15.1 11.5 15.6C12.7 16.1 13.6 16.5 14.2 16.7C14.8 16.9 15.1 17 15.3 16.9C15.5 16.8 15.7 16.6 15.9 16.2C16.1 15.8 16.3 15.2 16.5 14.4C16.7 13.6 16.8 12.6 16.8 11.4C16.8 10.2 16.7 9.1 16.5 8.1C16.3 7.1 16.1 6.3 15.9 5.7C15.7 5.1 15.5 4.7 15.3 4.5C15.1 4.3 14.8 4.2 14.2 4.1C13.6 4 12.7 3.9 11.5 3.8C10.3 3.7 8.9 3.6 7.4 3.5C5.9 3.4 4.5 3.3 3.4 3.2C2.3 3.1 1.5 3 1.1 2.9C0.7 2.8 0.7 2.7 1.8 2.6C2.9 2.5 5.4 2.4 8.4 2.3C9.9 2.2 11.4 2.1 12.8 2C14.2 1.9 15.5 1.8 16.5 1.7" fill="currentColor"/>
+                                </svg>
+                                右耳 (RE)
+                            </div>
+                            <div class="custom-option" data-value="LE">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M3.5 1.5C4.5 1 5.8 0.8 7.2 1.1C8.6 1.4 10.1 2.1 11.6 3.1C14.6 4.6 17.1 6.7 18.2 8.3C19.3 9.9 19.3 10.8 18.9 11.4C18.5 12 17.7 12.4 16.6 12.8C15.5 13.2 14.1 13.6 12.6 14.1C11.1 14.6 9.7 15.1 8.5 15.6C7.3 16.1 6.4 16.5 5.8 16.7C5.2 16.9 4.9 17 4.7 16.9C4.5 16.8 4.3 16.6 4.1 16.2C3.9 15.8 3.7 15.2 3.5 14.4C3.3 13.6 3.2 12.6 3.2 11.4C3.2 10.2 3.3 9.1 3.5 8.1C3.7 7.1 3.9 6.3 4.1 5.7C4.3 5.1 4.5 4.7 4.7 4.5C4.9 4.3 5.2 4.2 5.8 4.1C6.4 4 7.3 3.9 8.5 3.8C9.7 3.7 11.1 3.6 12.6 3.5C14.1 3.4 15.5 3.3 16.6 3.2C17.7 3.1 18.5 3 18.9 2.9C19.3 2.8 19.3 2.7 18.2 2.6C17.1 2.5 14.6 2.4 11.6 2.3C10.1 2.2 8.6 2.1 7.2 2C5.8 1.9 4.5 1.8 3.5 1.7" fill="currentColor"/>
+                                </svg>
+                                左耳 (LE)
+                            </div>
+                            <div class="custom-option" data-value="HD">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 5px; vertical-align: middle;">
+                                    <path d="M10 2C6.5 2 3.5 3.5 2 6C1.5 7 1 8.5 1 10C1 13.5 3.5 16 7 16C10.5 16 13 13.5 13 10C13 8.5 12.5 7 12 6C10.5 3.5 7.5 2 4 2" fill="currentColor"/>
+                                </svg>
+                                头部 (HD)
+                            </div>
+                        </div>
+                        <input type="hidden" id="editStructure" value="RF">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editForwardAngle">前方角度 (F)</label>
+                    <input type="number" id="editForwardAngle" min="-90" max="90">
+                </div>
+                <div class="form-group">
+                    <label for="editBendAngle">弯曲角度 (R)</label>
+                    <input type="number" id="editBendAngle" min="-90" max="90">
+                </div>
+                <div class="form-group">
+                    <label>速度等级 (S)</label>
+                    <select id="editSpeedLevel">
+                        <option value="1">S1 - 最慢</option>
+                        <option value="2">S2 - 慢</option>
+                        <option value="3">S3 - 中</option>
+                        <option value="4">S4 - 快</option>
+                        <option value="5">S5 - 最快</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>执行前延迟 (ms)</label>
+                    <input type="number" id="editDelayTime" min="0" max="10000" placeholder="动作执行前等待时间">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-primary" id="saveAction">保存</button>
+                    <button class="btn btn-danger" id="deleteAction">删除</button>
+                    <button class="btn btn-secondary" id="cancelEdit">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
