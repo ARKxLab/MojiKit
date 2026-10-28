@@ -222,7 +222,7 @@ RF F30 R20 S3;LF F-30 R15 S2;TA F45 R0 S4
 For questions or suggestions, please contact us through:
 
 - 项目Issues / Project Issues：[GitHub Issues](https://github.com/your-repo/issues)
-- 邮箱 / Email：your-email@example.com
+- 邮箱 / Email：helw24@mails.tsinghua.edu.cn / buaaheliwen@163.com
 
 ---
 
