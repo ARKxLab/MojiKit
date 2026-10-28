@@ -206,8 +206,7 @@ Contributions of code, bug reports, or suggestions are welcome!
 
 For questions or suggestions, please contact us through:
 - Project Issues: [GitHub Issues](https://github.com/your-repo/issues)
-- Email: your-email@example.com
-
+- Email: helw24@mails.tsinghua.edu.cn / buaaheliwen@163.com
 ---
 
 **Note**: Please ensure hardware connections are correct before use. It is recommended to operate under professional guidance. Servos require sufficient power supply. It is recommended to use an external power adapter.
